@@ -11,99 +11,1332 @@
 #include <dt-bindings/zmk/outputs.h>
 #include <dt-bindings/zmk/rgb.h>
 
-// layers
-#define DEFAULT 0
-#define LOWER 1
-#define MAGIC 2
-
 / {
-    behaviors {
-        // For the "layer" key, it'd nice to be able to use it as either a shift or a toggle.
-        // Configure it as a tap dance, so the first tap (or hold) is a &mo and the second tap is a &to
-        layer_td: tap_dance_0 {
-            compatible = "zmk,behavior-tap-dance";
-            #binding-cells = <0>;
-            tapping-term-ms = <200>;
-            bindings = <&mo LOWER>, <&to LOWER>;
-        };
+    /*****************************************************************************/
+                /* Colemak-DH 36-Key Layout for Mac & PC */
+/*****************************************************************************/
+
+// Author: mrpotatohead546
+// Intended for use with the Glove80 web editor
+// Reading the Notes first is suggested to help understand this layout
+
+/*****************************************************************************/
+                            /* Key Positions */
+/*****************************************************************************/
+
+/* Use these key positions for Hold-Tap hold-trigger-key-positions and Combos
+
+┌────┬────┬────┬────┬────┐                           ┌────┬────┬────┬────┬────┐
+   0    1    2    3    4                                5    6    7    8    9
+├────┼────┼────┼────┼────┼────┐                 ┌────┼────┼────┼────┼────┼────┤
+  10   11   12   13   14   15                     16   17   18   19   20   21
+├────┼────┼────┼────┼────┼────┤                 ├────┼────┼────┼────┼────┼────┤
+  22   23   24   25   26   27                     28   29   30   31   32   33
+├────┼────┼────┼────┼────┼────┤                 ├────┼────┼────┼────┼────┼────┤
+  34   35   36   37   38   39                     40   41   42   43   44   45
+├────┼────┼────┼────┼────┼────┤                 ├────┼────┼────┼────┼────┼────┤
+  46   47   48   49   50   51                     58   59   60   61   62   63
+├────┼────┼────┼────┼────┼────┘                 └────┼────┼────┼────┼────┼────┤
+  64   65   66   67   68                               75   76   77   78   79
+└────┴────┴────┴────┴────┘                           └────┴────┴────┴────┴────┘
+                    ┌────┬────┬────┐       ┌────┬────┬────┐
+                      52   53   54           55   56   57
+                    ├────┼────┼────┤       ├────┼────┼────┤
+                      69   70   71           72   73   74
+                    └────┴────┴────┘       └────┴────┴────┘
+*/
+
+/*****************************************************************************/
+                                /* Timers */
+/*****************************************************************************/
+
+/* Macro timers; can be increased for systems that don't like 0ms Macros */
+#define FAST_MACRO_TAP_MS 0
+#define FAST_MACRO_WAIT_MS 0
+
+/* How long Sticky Keys and Sticky Layers stay pressed */
+#define STICKY_KEY_RELEASE_AFTER_MS 600
+
+/* How quickly Combo keys must be pressed together */
+#define COMBO_TIMEOUT_MS 25
+
+/* How quickly both thumb Shift keys must be pressed together to activate Caps
+   Word */
+#define CAPS_WORD_COMBO_TIMEOUT_MS 150
+
+/* How long to hold to activate home row mods for same side or mouse usage */
+#define HOME_ROW_MODS_TAPPING_TERM_MS 300
+
+/* Cool down after typing before home row mods can be used */
+#define HOME_ROW_MODS_REQUIRE_PRIOR_IDLE_MS 175
+
+/* How quickly to double tap home row mods to hold down the tap action */
+#define HOME_ROW_MODS_QUICK_TAP_MS 200
+
+/* How long thumb keys can be held before rolls send the higher layer key */
+#define THUMBS_TAPPING_TERM_MS 200
+
+/* How quickly to double tap repeating thumb keys to hold the tap action */
+#define REPEATING_THUMBS_QUICK_TAP_MS 250
+
+/* How long until each phase of the capital I component of the typing assist 
+   feature times out */
+#define CAP_I_TIMEOUT_MS 700
+
+/* How long until each phase of the sentence case component of the typing 
+   assist feature times out */
+#define SENT_CASE_TIMEOUT_MS 60000
+
+/* How long until the dynamic repeat key feature times out */
+#define REPEAT_KEY_TIMEOUT_MS 700
+
+/* How long until the backspace word feature times out after the repeat key
+   is pressed */
+#define REPEAT_KEY_BACKSPACE_WORD_TIMEOUT_MS 250
+
+/* How long to hold for Autoshift */
+#define AUTOSHIFT_TAPPING_TERM_MS 200
+
+/* How long until the word and line selection feature times out */
+#define SELECT_TIMEOUT_MS 60000
+
+/* How quickly Tap Dance keys must be double tapped to activate */
+#define TAP_DANCE_TIMEOUT_MS 200
+
+/*****************************************************************************/
+                                /* Layers */
+/*****************************************************************************/
+
+#define BASE 0                /* Base layer; Colemak-DH */
+#define REPEAT_OFF 1          /* Disables dynamic repeat key feature */
+#define ASSIST_OFF 2          /* Disables Smart sentence case and capital I */
+#define PC 3                  /* Main PC mode layer; swaps CTRL and GUI */
+#define REPEAT_CONT 4         /* Repeat key on right thumb Shift */
+#define REPEAT_CONT_SL 5      /* Control layer for dynamic repeat key */
+#define REPEAT_CONT_OFF 6     /* Disables repeat key continuation */
+#define REPEAT_OFF_PC 7       /* Overlay to disable repeat key in PC mode */
+#define REPEAT_END 8          /* Backspace word after dynamic repeat key */
+#define REPEAT_END_PC 9       /* PC overlay for backspace word after repeat */
+#define SENT_CASE_CONT 10     /* Whitespace activates smart sentence case */
+#define SENT_CASE_END 11      /* Shifted letters for sentence case feature */
+#define SENT_CASE_END_PC 12   /* Sentence case shifted letters with PC mods */
+#define CAP_I_CONT 13         /* i activates smart capital I */
+#define CAP_I_END 14          /* Space and quote capitalize previous i */
+#define EDITING 15            /* Main Editing layer */
+#define EDITING_PC 16         /* PC mode overlay for Editing layer */
+#define EDITING_MO 17         /* Momentary control layer for Editing layer */
+#define EDITING_TOG 18        /* Locking control layer for Editing layer */
+#define SELECT_CONT 19        /* Selection continuation overlay */
+#define SELECT_CONT_PC 20     /* PC mode selection continuation overlay */
+#define SELECT_CONT_SL 21     /* Stop ->select leaking out of Editing layer */
+#define MEDIA 22              /* Main Media layer */
+#define MEDIA_PC 23           /* PC mode overlay for Media layer */
+#define NUMBERS 24            /* Main Numbers (and symbols) layer */
+#define NUMBERS_MO 25         /* Momentary control layer for Numbers layer */
+#define NUMBERS_TOG 26        /* Locking control layer for Numbers layer */
+#define FUNCTION 27           /* Main Function layer */
+#define NUM_FUNC_PC 28        /* PC mode for Numbers and Function layers */
+#define SYSTEM 29             /* Main System layer */
+
+/* Base layers for limiting Combo scope */
+#define BASE_LAYERS BASE REPEAT_OFF ASSIST_OFF PC REPEAT_CONT REPEAT_CONT_SL \
+    REPEAT_CONT_OFF REPEAT_OFF_PC REPEAT_END REPEAT_END_PC SENT_CASE_CONT \
+    SENT_CASE_END SENT_CASE_END_PC CAP_I_CONT CAP_I_END
+
+/*****************************************************************************/
+                            /* Layer Conditions */
+/*****************************************************************************/
+
+/* Conditional Layer helper */
+#define LAYER_CONDITION(NAME, IF, THEN) \
+    NAME { \
+        if-layers = <IF>; \
+        then-layer = <THEN>; \
     };
 
-    macros {
-        bt_0: bt_profile_macro_0 {
-            compatible = "zmk,behavior-macro";
-            #binding-cells = <0>;
-            bindings
-                = <&out OUT_BLE>,
-                  <&bt BT_SEL 0>;
-        };
+conditional_layers {
+    compatible = "zmk,conditional-layers";
 
-        bt_1: bt_profile_macro_1 {
-            compatible = "zmk,behavior-macro";
-            #binding-cells = <0>;
-            bindings
-                = <&out OUT_BLE>,
-                  <&bt BT_SEL 1>;
-        };
+    /* Support for both smart typing assist and repeat key being enabled */
+    LAYER_CONDITION(repeat_cont, REPEAT_CONT_SL, REPEAT_CONT)
+    LAYER_CONDITION(repeat_cap_i_cont, CAP_I_END, REPEAT_CONT)
+    LAYER_CONDITION(repeat_cont_off, REPEAT_OFF REPEAT_CONT, REPEAT_CONT_OFF)
 
-        bt_2: bt_profile_macro_2 {
-            compatible = "zmk,behavior-macro";
-            #binding-cells = <0>;
-            bindings
-                = <&out OUT_BLE>,
-                  <&bt BT_SEL 2>;
-        };
+    /* Support for toggling Mac/PC mode */
+    LAYER_CONDITION(repeat_off_pc, PC REPEAT_OFF, REPEAT_OFF_PC)
+    LAYER_CONDITION(repeat_end_pc, PC REPEAT_END, REPEAT_END_PC)
+    LAYER_CONDITION(sent_case_end_pc, PC SENT_CASE_END, SENT_CASE_END_PC)
+    LAYER_CONDITION(continue_selection_pc, PC SELECT_CONT, SELECT_CONT_PC)
+    LAYER_CONDITION(editing_pc, PC EDITING, EDITING_PC)
+    LAYER_CONDITION(media_pc, PC MEDIA, MEDIA_PC)
+    LAYER_CONDITION(numbers_pc, PC NUMBERS, NUM_FUNC_PC)
+    LAYER_CONDITION(function_pc, PC FUNCTION, NUM_FUNC_PC)
 
-        bt_3: bt_profile_macro_3 {
-            compatible = "zmk,behavior-macro";
-            #binding-cells = <0>;
-            bindings
-                = <&out OUT_BLE>,
-                  <&bt BT_SEL 3>;
-        };
+    /* Layer lock feature for Numbers layer */
+    LAYER_CONDITION(numbers_mo, NUMBERS_MO, NUMBERS)
+    LAYER_CONDITION(numbers_tog, NUMBERS_TOG, NUMBERS)
+
+    /* Layer lock feature for Editing layer */
+    LAYER_CONDITION(editing_mo, EDITING_MO, EDITING)
+    LAYER_CONDITION(editing_tog, EDITING_TOG, EDITING)
+
+    /* Restrict selection continuation to Editing layer */
+    LAYER_CONDITION(continue_selection, EDITING SELECT_CONT_SL, SELECT_CONT)
+
+    /* Hold Media and Function layers for System layer */
+    LAYER_CONDITION(system_layer, MEDIA FUNCTION, SYSTEM)
+};
+
+/*****************************************************************************/
+                        /* Basic Helper C Macros */
+/*****************************************************************************/
+
+/* Combo helper */
+#define ZMK_COMBO(NAME, TIMEOUT_MS, KEY_POSITIONS, LAYERS, BINDINGS) \
+    NAME { \
+        timeout-ms = <TIMEOUT_MS>; \
+        key-positions = <KEY_POSITIONS>; \
+        layers = <LAYERS>; \
+        bindings = <BINDINGS>; \
     };
 
+/* Convert NAME parameters into a ZMK label string */
+#define STRINGIFY(x) #x
+
+/* Create a ZMK Behavior without having to specify the name three times */
+#define ZMK_BEHAVIOR(NAME, ...) \
+    behaviors { \
+        NAME: NAME { \
+            label = STRINGIFY(ZB_ ## NAME); \
+            __VA_ARGS__ \
+        }; \
+    };
+
+/* Hold-Tap helper */
+#define HOLD_TAP(NAME, ...) \
+    ZMK_BEHAVIOR(NAME, \
+        compatible = "zmk,behavior-hold-tap"; \
+        #binding-cells = <2>; \
+        __VA_ARGS__ \
+    )
+
+/* Balanced Hold-Tap for home row mods and thumb layer keys */
+#define BALANCED_HOLD_TAP(NAME, ...) \
+    HOLD_TAP(NAME, \
+        flavor = "balanced";  /* Fast hold */ \
+        __VA_ARGS__ \
+    )
+
+/* Mod-Morph helper */
+#define MOD_MORPH(NAME, STANDARD, MORPHED, MODS, ...) \
+    ZMK_BEHAVIOR(NAME, \
+        compatible = "zmk,behavior-mod-morph"; \
+        #binding-cells = <0>; \
+        bindings = <STANDARD>, <MORPHED>; \
+        mods = <(MODS)>; \
+        __VA_ARGS__ \
+    )
+
+/* Mod-Morph that sends another key when Alt is held */
+#define ALT_MORPH(NAME, PRIMARY, ALTERNATE) \
+    MOD_MORPH(NAME, PRIMARY, ALTERNATE, MOD_LALT|MOD_RALT)
+
+/* Mod-Morph that sends another key when Shift is held */
+#define SHIFT_MORPH(NAME, LOWER, UPPER) \
+    MOD_MORPH(NAME, LOWER, UPPER, MOD_LSFT|MOD_RSFT)
+
+/* Tap Dance helper */
+#define TAP_DANCE(NAME, SINGLE, DOUBLE) \
+    ZMK_BEHAVIOR(NAME, \
+        compatible = "zmk,behavior-tap-dance"; \
+        #binding-cells = <0>; \
+        tapping-term-ms = <TAP_DANCE_TIMEOUT_MS>; \
+        bindings = <SINGLE>, <DOUBLE>; \
+    )
+
+/* Wrap ZMK_MACRO to avoid needing to specify Macro node */
+#define ZMKMACRO(NAME, ...) \
+    macros { \
+        ZMK_MACRO(NAME, __VA_ARGS__) \
+    };
+
+/* Wrap ZMK_MACRO1 to avoid needing to specify Macro node */
+#define ZMKMACRO1(NAME, ...) \
+    macros { \
+        ZMK_MACRO1(NAME, __VA_ARGS__) \
+    };
+
+/* Instant key press Macro helper using defined timers */
+#define FAST_MACRO(NAME, BINDINGS) \
+    ZMKMACRO(NAME, \
+        tap-ms = <FAST_MACRO_TAP_MS>; \
+        wait-ms = <FAST_MACRO_WAIT_MS>; \
+        bindings = <BINDINGS>; \
+    )
+
+/* Instant key press one parameter Macro helper using defined timers */
+#define FAST_MACRO1(NAME, BINDINGS) \
+    ZMKMACRO1(NAME, \
+        tap-ms = <FAST_MACRO_TAP_MS>; \
+        wait-ms = <FAST_MACRO_WAIT_MS>; \
+        bindings = <BINDINGS>; \
+    )
+
+/*****************************************************************************/
+                /* Sticky Layer State Machine Helper C Macros */
+/*****************************************************************************/
+
+/* Generic helper for Sticky Layer state machine actions and state
+   transitions. Used to build more specific helpers for features that use this
+   technique. SL_BEHAVIOR argument allows different features to use distinct
+   Sticky Layer implementations. */
+#define STATE_TRANSITION(NAME, ENTRY, ACTION_BINDING, SL_BEHAVIOR, \
+                         NEXT_STATE_LAYER) \
+    FAST_MACRO(NAME, \
+        ENTRY  /* Optional setup, pass &macro_tap &... */ \
+        &macro_press ACTION_BINDING  /* Main action */ \
+        &macro_tap SL_BEHAVIOR NEXT_STATE_LAYER  /* Move to next state */ \
+        &macro_pause_for_release  /* Hold for repeating key press */ \
+        &macro_release ACTION_BINDING \
+    )
+
+/* Sticky Layer Behavior definition helper */
+#define STICKY_LAYER_HELPER(NAME, TIMEOUT_MS, ...) \
+    ZMK_BEHAVIOR(NAME, \
+        compatible = "zmk,behavior-sticky-key"; \
+        #binding-cells = <1>; \
+        release-after-ms = <TIMEOUT_MS>;  /* Release if no key is pressed */ \
+        bindings = <&mo>; \
+        __VA_ARGS__ \
+    )
+
+/* Quick release Sticky Layer */
+#define STICKY_LAYER_QUICK_RELEASE(NAME, TIMEOUT_MS) \
+    STICKY_LAYER_HELPER(NAME, TIMEOUT_MS, \
+        quick-release;  /* Release as soon as another key is pressed */ \
+        ignore-modifiers;  /* Mods do not release Sticky Layer */ \
+    )
+
+/* Quick release Sticky Layer that does not ignore modifiers */
+#define STICKY_LAYER_NO_MODS(NAME, TIMEOUT_MS) \
+    STICKY_LAYER_HELPER(NAME, TIMEOUT_MS, \
+        quick-release;  /* Release as soon as another key is pressed */ \
+        /delete-property/ ignore-modifiers;  /* Mods release Sticky Layer */ \
+    )
+
+/* Helper for defining Mod Morph filters for catching modifiers on a state
+   Sticky Layer that does not ignore them in order to reset the state
+   machine */
+#define MOD_FILTER_HELPER(NAME, STANDARD, FILTERED, MODS) \
+    MOD_MORPH(NAME, STANDARD, FILTERED, MODS, \
+        keep-mods = <(MODS)>; \
+    )
+
+/* Filter for catching catching all mods */
+#define FILTER_ALL_MODS(NAME, STANDARD, FILTERED) \
+    MOD_FILTER_HELPER(NAME, STANDARD, FILTERED, \
+        MOD_LSFT|MOD_RSFT|MOD_LCTL|MOD_RCTL|MOD_LALT|MOD_RALT|MOD_LGUI| \
+        MOD_RGUI \
+    )
+
+/* Filter for catching all mods except Shift */
+#define FILTER_NON_SHIFT_MODS(NAME, STANDARD, FILTERED) \
+    MOD_FILTER_HELPER(NAME, STANDARD, FILTERED, \
+        MOD_LCTL|MOD_RCTL|MOD_LALT|MOD_RALT|MOD_LGUI|MOD_RGUI \
+    )
+
+/*****************************************************************************/
+                            /* Behavior Changes */
+/*****************************************************************************/
+
+behaviors {
+
+    /* Let Caps Word continue when typing Underscore */
+    caps_word {
+        continue-list = <UNDERSCORE MINUS BACKSPACE DELETE>;
+    };
+
+    /* Use defined timer for Sticky Keys */
+    sticky_key {
+        release-after-ms = <STICKY_KEY_RELEASE_AFTER_MS>;
+        quick-release;
+    };
+
+    /* Use defined timer for Sticky Layers */
+    sticky_layer {
+        release-after-ms = <STICKY_KEY_RELEASE_AFTER_MS>;
+    };
+};
+
+/*****************************************************************************/
+                                /* Combos */
+/*****************************************************************************/
+
+/* Limit to base layers and use defined timer for most Combos */
+#define COMBO(NAME, KEY_POSITIONS, BINDINGS) \
+    ZMK_COMBO(NAME, COMBO_TIMEOUT_MS, KEY_POSITIONS, BASE_LAYERS, BINDINGS)
+
+combos {
+    compatible = "zmk,combos";
+
+    /* Escape with left home thumb (Space) and left upper pinky (Q) */
+    COMBO(combo_esc, 23 69, &kp ESC)
+
+    /* Caps Word with left and right upper inner thumb keys (Shift) using
+       defined timer */
+    ZMK_COMBO(combo_caps_word, CAPS_WORD_COMBO_TIMEOUT_MS, 52 57, \
+        BASE_LAYERS, &caps_word \
+    )
+};
+
+/*****************************************************************************/
+                            /* Home Row Mods */
+/*****************************************************************************/
+
+/* "Timerless" home row mod Hold-Tap using defined timers */
+#define HOME_ROW_MOD_HELPER(NAME, KEY_POSITIONS, TAP) \
+    BALANCED_HOLD_TAP(NAME, \
+        tapping-term-ms = <HOME_ROW_MODS_TAPPING_TERM_MS>;  /* Mouse usage */ \
+        quick-tap-ms = <HOME_ROW_MODS_QUICK_TAP_MS>;  /* Double tap repeat */ \
+        /* Lockout when typing quickly */ \
+        require-prior-idle-ms = <HOME_ROW_MODS_REQUIRE_PRIOR_IDLE_MS>; \
+        hold-trigger-key-positions = <KEY_POSITIONS>;  /* Use other hand */ \
+        hold-trigger-on-release;  /* Enable chording mods */ \
+        bindings = <&kp>, <TAP>; \
+    )
+
+/* Left hand key positions for use with right hand mods */
+#define LEFT_HAND_KEYS \
+    /*    ┌────┬────┬────┬────┬────┐                                       */ \
+             0    1    2    3    4                                            \
+    /*    ├────┼────┼────┼────┼────┼────┐                                  */ \
+            10   11   12   13   14   15                                       \
+    /*    ├────┼────┼────┼────┼────┼────┤                                  */ \
+            22   23   24   25   26   27                                       \
+    /*    ├────┼────┼────┼────┼────┼────┤                                  */ \
+            34   35   36   37   38   39                                       \
+    /*    ├────┼────┼────┼────┼────┼────┤                                  */ \
+            46   47   48   49   50   51                                       \
+    /*    ├────┼────┼────┼────┼────┼────┘                                  */ \
+            64   65   66   67   68
+    /*    └────┴────┴────┴────┴────┘                                       */
+
+/* Right hand key positions for use with left hand mods */
+#define RIGHT_HAND_KEYS \
+    /*                                          ┌────┬────┬────┬────┬────┐ */ \
+                                                   5    6    7    8    9      \
+    /*                                     ┌────┼────┼────┼────┼────┼────┤ */ \
+                                             16   17   18   19   20   21      \
+    /*                                     ├────┼────┼────┼────┼────┼────┤ */ \
+                                             28   29   30   31   32   33      \
+    /*                                     ├────┼────┼────┼────┼────┼────┤ */ \
+                                             40   41   42   43   44   45      \
+    /*                                     ├────┼────┼────┼────┼────┼────┤ */ \
+                                             58   59   60   61   62   63      \
+    /*                                     └────┼────┼────┼────┼────┼────┤ */ \
+                                                  75   76   77   78   79
+    /*                                          └────┴────┴────┴────┴────┘ */
+
+/* Thumb key positions for use with mods on both hands */
+#define THUMB_KEYS \
+    /*                 ┌────┬────┬────┐      ┌────┬────┬────┐              */ \
+                         52   53   54          55   56   57                   \
+    /*                 ├────┼────┼────┤      ├────┼────┼────┤              */ \
+                         69   70   71          72   73   74
+    /*                 └────┴────┴────┘      └────┴────┴────┘              */ 
+
+
+/* Left and right hand home row mods */
+#define HOME_ROW_MOD_LH(NAME, TAP) \
+    HOME_ROW_MOD_HELPER(NAME, RIGHT_HAND_KEYS THUMB_KEYS, TAP)
+#define HOME_ROW_MOD_RH(NAME, TAP) \
+    HOME_ROW_MOD_HELPER(NAME, LEFT_HAND_KEYS THUMB_KEYS, TAP)
+
+HOME_ROW_MOD_LH(lh_hr_mt, &kp)  /* Left hand */
+HOME_ROW_MOD_RH(rh_hr_mt, &kp)  /* Right hand */
+
+/*****************************************************************************/
+                            /* Thumb Layer Keys */
+/*****************************************************************************/
+
+/* Home thumb layer tap without quick tap; faster layer switching */
+#define FAST_SWITCHING_THUMB_LAYER_TAP(NAME, TAP_BINDING) \
+    BALANCED_HOLD_TAP(NAME, \
+        tapping-term-ms = <THUMBS_TAPPING_TERM_MS>;  /* Rolls send tap key */ \
+        bindings = <&mo>, <TAP_BINDING>; \
+    )
+
+/* Reaching thumb layer tap with double tap to repeat */
+#define REPEATING_THUMB_LAYER_TAP(NAME, TAP_BINDING) \
+    BALANCED_HOLD_TAP(NAME, \
+        tapping-term-ms = <THUMBS_TAPPING_TERM_MS>;  /* Rolls send tap key */ \
+        quick-tap-ms = <REPEATING_THUMBS_QUICK_TAP_MS>;  /* 2x tap repeats */ \
+        bindings = <&mo>, <TAP_BINDING>; \
+    )
+
+/* Used on Base, Editing and Numbers layers to enable fast switching */
+FAST_SWITCHING_THUMB_LAYER_TAP(fst_lt, &kp)
+
+/* Used on Media and Function layers for Tab and Enter to enable hold to 
+   repeat */
+REPEATING_THUMB_LAYER_TAP(rt_lt, &kp)
+
+/*****************************************************************************/
+                        /* Triple Function Shift Keys */
+/*****************************************************************************/
+
+/* Instant Caps Lock on Mac OS */
+ZMKMACRO(instant_caps_lock, \
+    tap-ms = <200>;  /* Mac OS ignores short taps on Caps Lock */
+    bindings = <&kp CAPS>;
+)
+
+/* Triple function left Shift */
+MOD_MORPH(lshft_caps, &sk LSHFT, &instant_caps_lock, MOD_LSFT)
+
+/* Triple function right Shift with Mac/PC support */
+MOD_MORPH(rshft_bspcwd_mac, &sk RSHFT, &kp LA(BACKSPACE), MOD_RSFT)
+MOD_MORPH(rshft_bspcwd_pc, &sk RSHFT, &kp LC(BACKSPACE), MOD_RSFT)
+
+/*****************************************************************************/
+                    /* Custom Base Layer Punctuation */
+/*****************************************************************************/
+
+/* Custom base layer punctuation */
+SHIFT_MORPH(comma_semi, &kp COMMA, &kp SEMI)
+SHIFT_MORPH(dot_colon, &kp DOT, &kp COLON)
+SHIFT_MORPH(question_excl, &kp QUESTION, &kp EXCL)
+
+/*****************************************************************************/
+                    /* Dynamic Repeat Key */
+/*****************************************************************************/
+
+/* State transition Macros and Sticky Layer Behaviors for repeat key feature */
+STICKY_LAYER_NO_MODS(sl_repeat_key, REPEAT_KEY_TIMEOUT_MS)
+STICKY_LAYER_NO_MODS(sl_repeat_key_backspace_word, \
+    REPEAT_KEY_BACKSPACE_WORD_TIMEOUT_MS)
+#define REPEAT_KEY_STATE_TRANSITION(NAME, BINDING, SL_BEHAVIOR, \
+                                    NEXT_STATE_LAYER) \
+    STATE_TRANSITION(NAME, /* No ENTRY */, BINDING, SL_BEHAVIOR, \
+        NEXT_STATE_LAYER \
+    )
+#define TO_REPEAT_CONT(NAME, LETTER) \
+    REPEAT_KEY_STATE_TRANSITION(NAME, &kp LETTER, &sl_repeat_key, \
+        REPEAT_CONT_SL \
+    )
+
+/* BASE layer */
+
+/* Letters move to REPEAT_END */
+TO_REPEAT_CONT(q_repeat_start, Q)
+FILTER_ALL_MODS(q_repeat_start_filtered, &q_repeat_start, &kp Q)
+TO_REPEAT_CONT(w_repeat_start, W)
+FILTER_ALL_MODS(w_repeat_start_filtered, &w_repeat_start, &kp W)
+TO_REPEAT_CONT(f_repeat_start, F)
+FILTER_ALL_MODS(f_repeat_start_filtered, &f_repeat_start, &kp F)
+TO_REPEAT_CONT(p_repeat_start, P)
+FILTER_ALL_MODS(p_repeat_start_filtered, &p_repeat_start, &kp P)
+TO_REPEAT_CONT(b_repeat_start, B)
+FILTER_ALL_MODS(b_repeat_start_filtered, &b_repeat_start, &kp B)
+TO_REPEAT_CONT(a_repeat_start, A)
+FILTER_ALL_MODS(a_repeat_start_filtered, &a_repeat_start, &kp A)
+TO_REPEAT_CONT(r_repeat_start, R)
+FILTER_ALL_MODS(r_repeat_start_filtered, &r_repeat_start, &kp R)
+TO_REPEAT_CONT(s_repeat_start, S)
+FILTER_ALL_MODS(s_repeat_start_filtered, &s_repeat_start, &kp S)
+TO_REPEAT_CONT(t_repeat_start, T)
+FILTER_ALL_MODS(t_repeat_start_filtered, &t_repeat_start, &kp T)
+TO_REPEAT_CONT(g_repeat_start, G)
+FILTER_ALL_MODS(g_repeat_start_filtered, &g_repeat_start, &kp G)
+TO_REPEAT_CONT(z_repeat_start, Z)
+FILTER_ALL_MODS(z_repeat_start_filtered, &z_repeat_start, &kp Z)
+TO_REPEAT_CONT(x_repeat_start, X)
+FILTER_ALL_MODS(x_repeat_start_filtered, &x_repeat_start, &kp X)
+TO_REPEAT_CONT(c_repeat_start, C)
+FILTER_ALL_MODS(c_repeat_start_filtered, &c_repeat_start, &kp C)
+TO_REPEAT_CONT(d_repeat_start, D)
+FILTER_ALL_MODS(d_repeat_start_filtered, &d_repeat_start, &kp D)
+TO_REPEAT_CONT(v_repeat_start, V)
+FILTER_ALL_MODS(v_repeat_start_filtered, &v_repeat_start, &kp V)
+TO_REPEAT_CONT(j_repeat_start, J)
+FILTER_ALL_MODS(j_repeat_start_filtered, &j_repeat_start, &kp J)
+TO_REPEAT_CONT(l_repeat_start, L)
+FILTER_ALL_MODS(l_repeat_start_filtered, &l_repeat_start, &kp L)
+TO_REPEAT_CONT(u_repeat_start, U)
+FILTER_ALL_MODS(u_repeat_start_filtered, &u_repeat_start, &kp U)
+TO_REPEAT_CONT(y_repeat_start, Y)
+FILTER_ALL_MODS(y_repeat_start_filtered, &y_repeat_start, &kp Y)
+TO_REPEAT_CONT(m_repeat_start, M)
+FILTER_ALL_MODS(m_repeat_start_filtered, &m_repeat_start, &kp M)
+TO_REPEAT_CONT(n_repeat_start, N)
+FILTER_ALL_MODS(n_repeat_start_filtered, &n_repeat_start, &kp N)
+TO_REPEAT_CONT(e_repeat_start, E)
+FILTER_ALL_MODS(e_repeat_start_filtered, &e_repeat_start, &kp E)
+TO_REPEAT_CONT(i_repeat_start, I)
+FILTER_ALL_MODS(i_repeat_start_filtered, &i_repeat_start, &kp I)
+TO_REPEAT_CONT(o_repeat_start, O)
+FILTER_ALL_MODS(o_repeat_start_filtered, &o_repeat_start, &kp O)
+TO_REPEAT_CONT(k_repeat_start, K)
+FILTER_ALL_MODS(k_repeat_start_filtered, &k_repeat_start, &kp K)
+TO_REPEAT_CONT(h_repeat_start, H)
+FILTER_ALL_MODS(h_repeat_start_filtered, &h_repeat_start, &kp H)
+
+HOME_ROW_MOD_LH(lh_hr_mt_a_repeat_start, &a_repeat_start_filtered)
+HOME_ROW_MOD_LH(lh_hr_mt_r_repeat_start, &r_repeat_start_filtered)
+HOME_ROW_MOD_LH(lh_hr_mt_s_repeat_start, &s_repeat_start_filtered)
+HOME_ROW_MOD_LH(lh_hr_mt_t_repeat_start, &t_repeat_start_filtered)
+HOME_ROW_MOD_RH(rh_hr_mt_n_repeat_start, &n_repeat_start_filtered)
+HOME_ROW_MOD_RH(rh_hr_mt_e_repeat_start, &e_repeat_start_filtered)
+HOME_ROW_MOD_RH(rh_hr_mt_i_repeat_start, &i_repeat_start_filtered)
+HOME_ROW_MOD_RH(rh_hr_mt_o_repeat_start, &o_repeat_start_filtered)
+
+/* REPEAT_CONT layer */
+
+/* &key_repeat moves to REPEAT_END */
+
+REPEAT_KEY_STATE_TRANSITION(key_repeat_cont, &key_repeat, \
+    &sl_repeat_key_backspace_word, REPEAT_END \
+)
+
+/*****************************************************************************/
+                        /* Smart Typing Assist */
+/*****************************************************************************/
+
+/* Sticky Layer behaviors and simple state transition macros for each layer */
+STICKY_LAYER_QUICK_RELEASE(sl_cap_i, CAP_I_TIMEOUT_MS)
+STICKY_LAYER_QUICK_RELEASE(sl_sent_case, SENT_CASE_TIMEOUT_MS)
+#define TYPING_ASSIST_STATE_TRANSITION(NAME, KEYCODE, SL_BEHAVIOR, \
+                                       NEXT_STATE_LAYER) \
+    STATE_TRANSITION(NAME, /* No ENTRY */, &kp KEYCODE, SL_BEHAVIOR, \
+        NEXT_STATE_LAYER \
+    )
+#define CAP_I_STATE_TRANSITION(NAME, KEYCODE, NEXT_STATE_LAYER) \
+    TYPING_ASSIST_STATE_TRANSITION(NAME, KEYCODE, &sl_cap_i, NEXT_STATE_LAYER)
+#define SENT_CASE_STATE_TRANSITION(NAME, KEYCODE, NEXT_STATE_LAYER) \
+    TYPING_ASSIST_STATE_TRANSITION(NAME, KEYCODE, &sl_sent_case, \
+        NEXT_STATE_LAYER \
+    )
+#define TO_CAP_I_CONT(NAME, KEYCODE) \
+    CAP_I_STATE_TRANSITION(NAME, KEYCODE, CAP_I_CONT)
+#define TO_CAP_I_END(NAME, KEYCODE) \
+    CAP_I_STATE_TRANSITION(NAME, KEYCODE, CAP_I_END)
+#define TO_SENT_CASE_CONT(NAME, KEYCODE) \
+    SENT_CASE_STATE_TRANSITION(NAME, KEYCODE, SENT_CASE_CONT)
+#define TO_SENT_CASE_END(NAME, KEYCODE) \
+    SENT_CASE_STATE_TRANSITION(NAME, KEYCODE, SENT_CASE_END)
+
+/* State transitions from CAP_I_END */
+#define CAP_I_END_CORRECTION \
+    &macro_release &kp I  /* Release i to support rolling keys */ \
+    &macro_tap &kp BACKSPACE &kp LS(I)  /* Delete and replace with I */
+#define CAP_I_END_FINAL(NAME, KEYCODE) \
+    FAST_MACRO(NAME, \
+        CAP_I_END_CORRECTION \
+        &macro_press &kp KEYCODE \
+        &macro_pause_for_release \
+        &macro_release &kp KEYCODE \
+    )
+#define CAP_I_END_TO_CAP_I_CONT(NAME, KEYCODE) \
+    STATE_TRANSITION(NAME, \
+        CAP_I_END_CORRECTION, &kp KEYCODE, &sl_cap_i, CAP_I_CONT \
+    )
+#define CAP_I_END_TO_SENT_CASE_CONT(NAME, KEYCODE) \
+    STATE_TRANSITION(NAME, \
+        CAP_I_END_CORRECTION, &kp KEYCODE, &sl_sent_case, SENT_CASE_CONT \
+    )
+
+/* State transitions from SENT_CASE_FINAL */
+#define SENT_CASE_END_FINAL_LH(NAME, LETTER) \
+    FILTER_ALL_MODS(NAME, &kp RS(LETTER), &kp LETTER)
+#define SENT_CASE_END_FINAL_RH(NAME, LETTER) \
+    FILTER_ALL_MODS(NAME, &kp LS(LETTER), &kp LETTER)
+
+/* BASE layer */
+
+/* Space moves to CAP_I_CONT */
+
+TO_CAP_I_CONT(space_assist_start, SPACE)
+FILTER_ALL_MODS(space_assist_start_filter, &space_assist_start, &kp SPACE)
+FAST_SWITCHING_THUMB_LAYER_TAP(fst_lt_space_assist_start, \
+    &space_assist_start_filter \
+)
+
+/* . : ? ! move to SENT_CASE_CONT */
+
+TO_SENT_CASE_CONT(dot_assist_start, DOT)
+FILTER_NON_SHIFT_MODS(dot_assist_start_filter, &dot_assist_start, &kp DOT)
+TO_SENT_CASE_CONT(colon_assist_start, COLON)
+FILTER_NON_SHIFT_MODS(colon_assist_start_filter, &colon_assist_start, \
+    &kp COLON)
+SHIFT_MORPH(dot_colon_assist_start, &dot_assist_start_filter, \
+    &colon_assist_start_filter)
+
+TO_SENT_CASE_CONT(question_assist_start, QUESTION)
+FILTER_NON_SHIFT_MODS(question_assist_start_filter, &question_assist_start, \
+    &kp QUESTION)
+TO_SENT_CASE_CONT(excl_assist_start, EXCL)
+FILTER_NON_SHIFT_MODS(excl_assist_start_filter, &excl_assist_start, &kp EXCL)
+SHIFT_MORPH(question_excl_assist_start, &question_assist_start_filter, \
+    &excl_assist_start_filter)
+
+/* Enter moves to SENT_CASE_END */
+
+TO_SENT_CASE_END(enter_assist_start, ENTER)
+FILTER_ALL_MODS(enter_assist_start_filter, &enter_assist_start, &kp ENTER)
+FAST_SWITCHING_THUMB_LAYER_TAP(fst_lt_enter_assist_start, \
+    &enter_assist_start_filter \
+)
+
+/* CAP_I_CONT layer */
+
+/* ' " move to CAP_I_CONT */
+
+TO_CAP_I_CONT(sqt_cap_i_cont, SQT)
+FILTER_NON_SHIFT_MODS(sqt_dqt_cap_i_cont, &sqt_cap_i_cont, &kp SQT)
+
+/* i moves to CAP_I_END */
+
+TO_CAP_I_END(i_cap_i_cont, I)
+FILTER_ALL_MODS(i_cap_i_cont_filter, &i_cap_i_cont, &kp I)
+HOME_ROW_MOD_RH(rh_hr_mt_i_cap_i_cont, &i_cap_i_cont_filter)
+
+/* CAP_I_END layer */
+
+/* Space moves to CAP_I_CONT */
+
+CAP_I_END_TO_CAP_I_CONT(space_cap_i_end, SPACE)
+FILTER_ALL_MODS(space_cap_i_end_filter, &space_cap_i_end, &kp SPACE)
+FAST_SWITCHING_THUMB_LAYER_TAP(fst_lt_space_cap_i_end, &space_cap_i_end_filter)
+
+/* Tab Enter ' " , ; end state machine */
+
+CAP_I_END_FINAL(tab_cap_i_end, TAB)
+FILTER_ALL_MODS(tab_cap_i_end_filter, &tab_cap_i_end, &kp TAB)
+FAST_SWITCHING_THUMB_LAYER_TAP(fst_lt_tab_cap_i_end, &tab_cap_i_end_filter)
+
+CAP_I_END_FINAL(enter_cap_i_end, ENTER)
+FILTER_ALL_MODS(enter_cap_i_end_filter, &enter_cap_i_end, &kp ENTER)
+FAST_SWITCHING_THUMB_LAYER_TAP(fst_lt_enter_cap_i_end, &enter_cap_i_end_filter)
+
+CAP_I_END_FINAL(sqt_cap_i_end, SQT)
+FILTER_NON_SHIFT_MODS(sqt_dqt_cap_i_end, &sqt_cap_i_end, &kp SQT)
+
+CAP_I_END_FINAL(comma_cap_i_end, COMMA)
+FILTER_NON_SHIFT_MODS(comma_cap_i_end_filter, &comma_cap_i_end, &kp COMMA)
+CAP_I_END_FINAL(semi_cap_i_end, SEMI)
+FILTER_NON_SHIFT_MODS(semi_cap_i_end_filter, &semi_cap_i_end, &kp SEMI)
+SHIFT_MORPH(comma_semi_cap_i_end, &comma_cap_i_end_filter,
+    &semi_cap_i_end_filter)
+
+/* . : ? ! move to SENT_CASE_CONT */
+
+CAP_I_END_TO_SENT_CASE_CONT(dot_cap_i_end, DOT)
+FILTER_NON_SHIFT_MODS(dot_cap_i_end_filter, &dot_cap_i_end, &kp DOT)
+CAP_I_END_TO_SENT_CASE_CONT(colon_cap_i_end, COLON)
+FILTER_NON_SHIFT_MODS(colon_cap_i_end_filter, &colon_cap_i_end, &kp COLON)
+SHIFT_MORPH(dot_colon_cap_i_end, &dot_cap_i_end_filter, \
+    &colon_cap_i_end_filter)
+
+CAP_I_END_TO_SENT_CASE_CONT(question_cap_i_end, QUESTION)
+FILTER_NON_SHIFT_MODS(question_cap_i_end_filter, &question_cap_i_end, \
+    &kp QUESTION)
+CAP_I_END_TO_SENT_CASE_CONT(excl_cap_i_end, EXCL)
+FILTER_NON_SHIFT_MODS(excl_cap_i_end_filter, &excl_cap_i_end, &kp EXCL)
+SHIFT_MORPH(question_excl_cap_i_end, &question_cap_i_end_filter, \
+    &excl_cap_i_end_filter)
+
+/* SENT_CASE_CONT layer */
+
+/* ' " move to SENT_CASE_CONT */
+
+TO_SENT_CASE_CONT(sqt_sent_case_cont, SQT)
+FILTER_NON_SHIFT_MODS(sqt_dqt_sent_case_cont, &sqt_sent_case_cont, &kp SQT)
+
+/* Space Tab move to SENT_CASE_END */
+
+TO_SENT_CASE_END(space_sent_case_cont, SPACE)
+FILTER_ALL_MODS(space_sent_case_cont_filter, &space_sent_case_cont, &kp SPACE)
+FAST_SWITCHING_THUMB_LAYER_TAP(fst_lt_space_sent_case_cont, \
+    &space_sent_case_cont_filter \
+)
+
+TO_SENT_CASE_END(tab_sent_case_cont, TAB)
+FILTER_ALL_MODS(tab_sent_case_cont_filter, &tab_sent_case_cont, &kp TAB)
+FAST_SWITCHING_THUMB_LAYER_TAP(fst_lt_tab_sent_case_cont, \
+    &tab_sent_case_cont_filter \
+)
+
+/* SENT_CASE_END layer */
+
+/* Tab ' " move to SENT_CASE_END */
+
+TO_SENT_CASE_END(tab_sent_case_end, TAB)
+FILTER_ALL_MODS(tab_sent_case_end_filter, &tab_sent_case_end, &kp TAB)
+FAST_SWITCHING_THUMB_LAYER_TAP(fst_lt_tab_sent_case_end, \
+    &tab_sent_case_end_filter \
+)
+
+TO_SENT_CASE_END(sqt_sent_case_end, SQT)
+FILTER_NON_SHIFT_MODS(sqt_dqt_sent_case_end, &sqt_sent_case_end, &kp SQT)
+
+/* Space cancels state machine and moves to BASE */
+
+FILTER_ALL_MODS(space_sent_case_end_filter, &kp K_CANCEL, &kp SPACE)
+FAST_SWITCHING_THUMB_LAYER_TAP(fst_lt_space_sent_case_end, \
+    &space_sent_case_end_filter \
+)
+
+/* Letters end state machine */
+SENT_CASE_END_FINAL_LH(q_sent_case_end, Q)
+SENT_CASE_END_FINAL_LH(w_sent_case_end, W)
+SENT_CASE_END_FINAL_LH(f_sent_case_end, F)
+SENT_CASE_END_FINAL_LH(p_sent_case_end, P)
+SENT_CASE_END_FINAL_LH(b_sent_case_end, B)
+SENT_CASE_END_FINAL_LH(a_sent_case_end, A)
+SENT_CASE_END_FINAL_LH(r_sent_case_end, R)
+SENT_CASE_END_FINAL_LH(s_sent_case_end, S)
+SENT_CASE_END_FINAL_LH(t_sent_case_end, T)
+SENT_CASE_END_FINAL_LH(g_sent_case_end, G)
+SENT_CASE_END_FINAL_LH(z_sent_case_end, Z)
+SENT_CASE_END_FINAL_LH(x_sent_case_end, X)
+SENT_CASE_END_FINAL_LH(c_sent_case_end, C)
+SENT_CASE_END_FINAL_LH(d_sent_case_end, D)
+SENT_CASE_END_FINAL_LH(v_sent_case_end, V)
+SENT_CASE_END_FINAL_RH(j_sent_case_end, J)
+SENT_CASE_END_FINAL_RH(l_sent_case_end, L)
+SENT_CASE_END_FINAL_RH(u_sent_case_end, U)
+SENT_CASE_END_FINAL_RH(y_sent_case_end, Y)
+SENT_CASE_END_FINAL_RH(m_sent_case_end, M)
+SENT_CASE_END_FINAL_RH(n_sent_case_end, N)
+SENT_CASE_END_FINAL_RH(e_sent_case_end, E)
+SENT_CASE_END_FINAL_RH(i_sent_case_end, I)
+SENT_CASE_END_FINAL_RH(o_sent_case_end, O)
+SENT_CASE_END_FINAL_RH(k_sent_case_end, K)
+SENT_CASE_END_FINAL_RH(h_sent_case_end, H)
+
+HOME_ROW_MOD_LH(lh_hr_mt_a_sent_case_end, &a_sent_case_end)
+HOME_ROW_MOD_LH(lh_hr_mt_r_sent_case_end, &r_sent_case_end)
+HOME_ROW_MOD_LH(lh_hr_mt_s_sent_case_end, &s_sent_case_end)
+HOME_ROW_MOD_LH(lh_hr_mt_t_sent_case_end, &t_sent_case_end)
+HOME_ROW_MOD_RH(rh_hr_mt_n_sent_case_end, &n_sent_case_end)
+HOME_ROW_MOD_RH(rh_hr_mt_e_sent_case_end, &e_sent_case_end)
+HOME_ROW_MOD_RH(rh_hr_mt_i_sent_case_end, &i_sent_case_end)
+HOME_ROW_MOD_RH(rh_hr_mt_o_sent_case_end, &o_sent_case_end)
+
+/*****************************************************************************/
+                    /* Numbers Layer Custom Shifted Pairs */
+/*****************************************************************************/
+
+/* Autoshift Behavior using defined timer */
+#define AUTOSHIFT(NAME, HOLD, TAP) \
+    HOLD_TAP(NAME, \
+        flavor = "tap-preferred"; \
+        tapping-term-ms = <AUTOSHIFT_TAPPING_TERM_MS>;  /* Hold for Shift */ \
+        bindings = <HOLD>, <TAP>; \
+    )
+
+AUTOSHIFT(as, &kp, &kp)  /* Main Autoshift Behavior */
+
+/* Autoshifting Mod-Morph Behavior that sends another key when Shift is held */
+#define AUTOSHIFT_MORPH(NAME, LOWER, UPPER) \
+    SHIFT_MORPH(NAME, &as UPPER LOWER, &kp UPPER)
+
+/* Numbers layer custom number and symbol pairs with Autoshift */
+AUTOSHIFT_MORPH(as_bslh_caret, BSLH, CARET)
+AUTOSHIFT_MORPH(as_n7_lbkt, N7, LBKT)
+AUTOSHIFT_MORPH(as_n8_rbkt, N8, RBKT)
+AUTOSHIFT_MORPH(as_n9_star, N9, STAR)
+AUTOSHIFT_MORPH(as_fslh_amps, FSLH, AMPS)
+AUTOSHIFT_MORPH(as_colon_excl, COLON, EXCL)
+AUTOSHIFT_MORPH(as_n4_lpar, N4, LPAR)
+AUTOSHIFT_MORPH(as_n5_rpar, N5, RPAR)
+AUTOSHIFT_MORPH(as_n6_equal, N6, EQUAL)
+AUTOSHIFT_MORPH(as_hash_pipe, HASH, PIPE)
+AUTOSHIFT_MORPH(as_at_prcnt, AT, PRCNT)
+AUTOSHIFT_MORPH(as_n1_lbrc, N1, LBRC)
+AUTOSHIFT_MORPH(as_n2_rbrc, N2, RBRC)
+AUTOSHIFT_MORPH(as_n3_dllr, N3, DLLR)
+AUTOSHIFT_MORPH(as_grave_tilde, GRAVE, TILDE)
+AUTOSHIFT_MORPH(as_minus_plus, MINUS, PLUS)
+AUTOSHIFT_MORPH(as_n0_under, N0, UNDER)
+AUTOSHIFT_MORPH(as_lt_gt, LT, GT)
+
+/*****************************************************************************/
+                /* Editing Layer Alternative Shortcuts */
+/*****************************************************************************/
+
+/* Editing layer alternative shortcuts with Mac/PC support */
+ALT_MORPH(copy_sel_all_mac, &kp LG(C), &kp LG(A))
+ALT_MORPH(copy_sel_all_pc, &kp LC(C), &kp LC(A))
+ALT_MORPH(paste_undo_mac, &kp LG(V), &kp LG(Z))
+ALT_MORPH(paste_undo_pc, &kp LC(V), &kp LC(Z))
+
+/*****************************************************************************/
+                /* One-Handed Opposite Layer Access */
+/*****************************************************************************/
+
+AUTOSHIFT(tog_sl, &tog, &sl)  /* Tap for a single key press, hold to lock */
+
+/*****************************************************************************/
+                        /* Word & Line Selection */
+/*****************************************************************************/
+
+/* Quick release Sticky Layer Behavior that does not ignore modifiers using
+   defined timer for continuing the word and line selection feature */
+STICKY_LAYER_NO_MODS(sl_select_cont, SELECT_TIMEOUT_MS)
+
+/* Select Macro definition helper */
+#define SELECT_HELPER(NAME, SETUP, SELECTION_BINDING) \
+    STATE_TRANSITION(NAME, SETUP, SELECTION_BINDING, &sl_select_cont, \
+        SELECT_CONT_SL)
+
+/* Select start Macro helper */
+#define SELECT_START_MACRO(NAME, SETUP_BINDINGS, SELECTION_BINDING) \
+    SELECT_HELPER(NAME, &macro_tap SETUP_BINDINGS, SELECTION_BINDING)
+
+/* Select continue Macro helper */
+#define SELECT_CONT_MACRO(NAME, SELECTION_BINDING) \
+    SELECT_HELPER(NAME, /* No SETUP */, SELECTION_BINDING)
+
+/* Movement, jumping and selection helper macros */
+#define MAC_WF   LA(RIGHT)              /* Jump forward a word on Mac */
+#define MAC_WB   LA(LEFT)               /* Jump backward a word on Mac */
+#define MAC_HOME LG(LEFT)               /* Jump to start of line on Mac */
+#define PC_WF    LC(RIGHT)              /* Jump forward a word on PC */
+#define PC_WB    LC(LEFT)               /* Jump backward a word on PC */
+#define PC_HOME  HOME                   /* Jump to start of line on PC */
+#define JMP2(MV1, MV2) &kp MV1 &kp MV2  /* Jump around, jump around... */
+#define JMP3(MV1, MV2, MV3)             /* Jump up, jump up, and get down */ \
+    &kp MV1 &kp MV2 &kp MV3
+#define SEL(MOVEMENT) &kp LS(MOVEMENT)  /* Select text */
+
+/* Word and line select start Macros for Mac */
+SELECT_START_MACRO(sel_wd_fwd_mac, JMP2(MAC_WF, MAC_WB), SEL(MAC_WF))
+SELECT_START_MACRO(sel_wd_bwd_mac, JMP2(MAC_WB, MAC_WF), SEL(MAC_WB))
+SELECT_START_MACRO(sel_ln_fwd_mac, JMP2(MAC_HOME, MAC_HOME), SEL(DOWN))
+SELECT_START_MACRO(sel_ln_bwd_mac, JMP3(MAC_HOME, MAC_HOME, DOWN), SEL(UP))
+
+/* Word and line select start Macros for PC */
+SELECT_START_MACRO(sel_wd_fwd_pc, JMP2(PC_WF, PC_WB), SEL(PC_WF))
+SELECT_START_MACRO(sel_wd_bwd_pc, JMP2(PC_WB, PC_WF), SEL(PC_WB))
+SELECT_START_MACRO(sel_ln_fwd_pc, JMP2(PC_HOME, PC_HOME), SEL(DOWN))
+SELECT_START_MACRO(sel_ln_bwd_pc, JMP3(PC_HOME, PC_HOME, DOWN), SEL(UP))
+
+/* Word select continue Macros for Mac */
+SELECT_CONT_MACRO(cont_sel_wd_fwd_mac, SEL(MAC_WF))
+SELECT_CONT_MACRO(cont_sel_wd_bwd_mac, SEL(MAC_WB))
+
+/* Word select continue Macros for PC */
+SELECT_CONT_MACRO(cont_sel_wd_fwd_pc, SEL(PC_WF))
+SELECT_CONT_MACRO(cont_sel_wd_bwd_pc, SEL(PC_WB))
+
+/* Line select continue Macros */
+SELECT_CONT_MACRO(cont_sel_ln_fwd, SEL(DOWN))
+SELECT_CONT_MACRO(cont_sel_ln_bwd, SEL(UP))
+
+/*****************************************************************************/
+                    /* System Layer */
+/*****************************************************************************/
+
+/* Native ZMK Macros for selecting Bluetooth profiles */
+#define SELECT_BLUETOOTH_OUTPUT(NAME, BT_PROFILE_NUMBER) \
+    FAST_MACRO(NAME, &out OUT_BLE &bt BT_SEL BT_PROFILE_NUMBER)
+SELECT_BLUETOOTH_OUTPUT(out_bt_0, 0)
+SELECT_BLUETOOTH_OUTPUT(out_bt_1, 1)
+SELECT_BLUETOOTH_OUTPUT(out_bt_2, 2)
+SELECT_BLUETOOTH_OUTPUT(out_bt_3, 3)
+TAP_DANCE(out_disc_bt_0, &out_bt_0, &bt BT_DISC 0)
+TAP_DANCE(out_disc_bt_1, &out_bt_1, &bt BT_DISC 1)
+TAP_DANCE(out_disc_bt_2, &out_bt_2, &bt BT_DISC 2)
+TAP_DANCE(out_disc_bt_3, &out_bt_3, &bt BT_DISC 3)
+
+/* Native ZMK Macro for clearing all Bluetooth profiles */
+FAST_MACRO(bt_clr_all_macro, &macro_tap \
+    &bt BT_SEL 0 &bt BT_CLR \
+    &bt BT_SEL 1 &bt BT_CLR \
+    &bt BT_SEL 2 &bt BT_CLR \
+    &bt BT_SEL 3 &bt BT_CLR \
+    &bt BT_SEL 0 \
+)
+
+/* Double tap to confirm dangerous actions using defined timer */
+#define DOUBLE_TAP(NAME, BINDING) \
+    TAP_DANCE(NAME, &none, BINDING)
+
+DOUBLE_TAP(confirm_bt_clr, &bt BT_CLR)  /* Clear current Bluetooth profile */
+DOUBLE_TAP(confirm_bt_clr_all, &bt_clr_all_macro)  /* Clear all BT profiles */
+
+/* The reset Behaviors always reset the left half of the keyboard when nested
+   in a Tap-Dance; reference ZMK issue #1494 */
+// DOUBLE_TAP(confirm_reset, &sys_reset)  /* Soft reset */
+// DOUBLE_TAP(confirm_bootloader, &bootloader)  /* Bootloader reset */
+
+/* Macros for turning layers on or off */
+FAST_MACRO1(on, &macro_tap &macro_param_1to1 &mo MACRO_PLACEHOLDER \
+    &macro_param_1to1 &tog MACRO_PLACEHOLDER \
+)
+FAST_MACRO1(off, &macro_tap &macro_param_1to1 &mo MACRO_PLACEHOLDER)
+
+/*****************************************************************************/
+                /* Editing & Number Layer Lock Status */
+/*****************************************************************************/
+
+/* Feature status helper */
+#define FEATURE_STATUS(NAME, STATUS_BINDINGS, BACKSPACE_BINDINGS) \
+    ZMKMACRO(NAME, \
+        tap-ms = <FAST_MACRO_TAP_MS>; \
+        wait-ms = <15>; \
+        bindings \
+            = <&kp SPACE STATUS_BINDINGS &kp SPACE> \
+            , <&macro_wait_time 500 &none &macro_wait_time 15> \
+            , <&kp BACKSPACE BACKSPACE_BINDINGS &kp BACKSPACE> \
+            ; \
+    )
+
+/* Editing & Number layer lock status */
+FEATURE_STATUS(editing_numbers_status_locked,
+    &kp LS(L) &kp LS(O) &kp LS(C) &kp LS(K) &kp LS(E) &kp LS(D), \
+    &kp BACKSPACE &kp BACKSPACE &kp BACKSPACE &kp BACKSPACE &kp BACKSPACE \
+    &kp BACKSPACE \
+)
+
+};
+
+    /* Automatically generated keymap */
+/ {
     keymap {
         compatible = "zmk,keymap";
 
-        default_layer {
-            // ---------------------------------------------------------------------------------------------------------------------------------
-            // |  F1   |  F2 |  F3 |  F4  |  F5  |                                                               |  F6   |  F7   |  F8  |   F9  |  F10 |
-            // |  =    |  1  |  2  |  3   |  4   |  5   |                                                 |  6   |   7   |   8   |  9   |   0   |   -  |
-            // |  TAB  |  Q  |  W  |  E   |  R   |  T   |                                                 |  Y   |   U   |   I   |  O   |   P   |   \  |
-            // |  ESC  |  A  |  S  |  D   |  F   |  G   |                                                 |  H   |   J   |   K   |  L   |   ;   |   '  |
-            // |   `   |  Z  |  X  |  C   |  V   |  B   | LSHFT | LCTRL | LOWER | | LGUI  | RCTRL | RSHFT |  N   |   M   |   ,   |  .   |   /   | PGUP |
-            // | MAGIC | HOME| END | LEFT | RIGHT|      | BSPC  | DEL   | LALT  | | RALT  | RET   | SPACE |      |  UP   | DOWN  |  [   |   ]   | PGDN |
 
+        layer_Base {
             bindings = <
-            &kp F1         &kp F2   &kp F3      &kp F4      &kp F5                                                                                         &kp F6  &kp F7      &kp F8      &kp F9      &kp F10
-            &kp EQUAL      &kp N1   &kp N2      &kp N3      &kp N4      &kp N5                                                                     &kp N6  &kp N7  &kp N8      &kp N9      &kp N0      &kp MINUS
-            &kp TAB        &kp Q    &kp W       &kp E       &kp R       &kp T                                                                      &kp Y   &kp U   &kp I       &kp O       &kp P       &kp BSLH
-            &kp ESC        &kp A    &kp S       &kp D       &kp F       &kp G                                                                      &kp H   &kp J   &kp K       &kp L       &kp SEMI    &kp SQT
-            &kp GRAVE      &kp Z    &kp X       &kp C       &kp V       &kp B   &kp LSHFT   &kp LCTRL   &layer_td  &kp LGUI  &kp RCTRL &kp RSHFT   &kp N   &kp M   &kp COMMA   &kp DOT     &kp FSLH    &kp PG_UP
-            &mo MAGIC      &kp HOME &kp END     &kp LEFT    &kp RIGHT           &kp BSPC    &kp DEL     &kp LALT   &kp RALT  &kp RET   &kp SPACE           &kp UP  &kp DOWN    &kp LBKT    &kp RBKT    &kp PG_DN
+              &none                             &none                            &none                            &none                             &none                                                                                                                                                                                                                                  &none                            &none                            &none           &kp LC(LS(LA(LG(F13))))  &kp LC(LS(LA(LG(F14))))
+              &none                             &none                            &none                            &none                             &none                     &none                                                                                                                                                                      &none                             &none                            &none                            &none                   &rgb_ug RGB_TOG            &kp LC(LG(Q))
+              &none          &q_repeat_start_filtered         &w_repeat_start_filtered         &f_repeat_start_filtered          &p_repeat_start_filtered  &b_repeat_start_filtered                                                                                                                                                   &j_repeat_start_filtered          &l_repeat_start_filtered         &u_repeat_start_filtered         &y_repeat_start_filtered       &question_excl_assist_start                    &none
+              &none  &lh_hr_mt_a_repeat_start LCTRL 0  &lh_hr_mt_r_repeat_start LALT 0  &lh_hr_mt_s_repeat_start LGUI 0  &lh_hr_mt_t_repeat_start LSHFT 0  &g_repeat_start_filtered                                                                                                                                                   &m_repeat_start_filtered  &rh_hr_mt_n_repeat_start RSHFT 0  &rh_hr_mt_e_repeat_start RGUI 0  &rh_hr_mt_i_repeat_start RALT 0  &rh_hr_mt_o_repeat_start RCTRL 0                    &none
+              &none          &z_repeat_start_filtered         &x_repeat_start_filtered         &c_repeat_start_filtered          &d_repeat_start_filtered  &v_repeat_start_filtered                              &lshft_caps              &none   &none   &none                                  &none             &rshft_bspcwd_mac  &k_repeat_start_filtered          &h_repeat_start_filtered                      &comma_semi          &dot_colon_assist_start                           &kp SQT                    &none
+              &none                             &none                            &none                            &none                             &none                            &fst_lt_space_assist_start EDITING_MO 0  &fst_lt MEDIA TAB   &none   &none  &fst_lt_enter_assist_start FUNCTION 0  &fst_lt NUMBERS_MO BACKSPACE                                                       &none                            &none                            &none                             &none                    &none
             >;
         };
 
-        lower_layer {
+        layer_RepeatOff {
             bindings = <
-            &kp C_BRI_DN      &kp C_BRI_UP        &kp C_PREV      &kp C_NEXT      &kp C_PP                                                                                                           &kp C_MUTE   &kp C_VOL_DN &kp C_VOL_UP  &none           &kp PAUSE_BREAK
-            &trans            &none               &none           &none           &none           &kp HOME                                                                              &kp LPAR     &kp KP_NUM   &kp KP_EQUAL &kp KP_DIVIDE &kp KP_MULTIPLY &kp PSCRN
-            &trans            &none               &none           &kp UP          &none           &kp END                                                                               &kp RPAR     &kp KP_N7    &kp KP_N8    &kp KP_N9     &kp KP_MINUS    &kp SLCK
-            &trans            &none               &kp LEFT        &kp DOWN        &kp RIGHT       &kp PG_UP                                                                             &kp PRCNT    &kp KP_N4    &kp KP_N5    &kp KP_N6     &kp KP_PLUS     &none
-            &trans            &kp K_CMENU         &none           &kp F11         &kp F12         &kp PG_DN       &trans      &trans      &to DEFAULT &trans      &trans      &trans    &kp COMMA    &kp KP_N1    &kp KP_N2    &kp KP_N3     &kp KP_ENTER    &trans
-            &trans            &kp CAPS            &kp INS         &kp F11         &kp F12                         &trans      &trans      &trans      &trans      &trans      &trans                 &kp KP_N0    &kp KP_N0    &kp KP_DOT    &kp KP_ENTER    &trans
+  &none              &none             &none             &none              &none                                                                              &none             &none             &none             &trans  &trans
+  &none              &none             &none             &none              &none   &none                                                   &none              &none             &none             &none             &trans  &trans
+  &none              &kp Q             &kp W             &kp F              &kp P   &kp B                                                   &kp J              &kp L             &kp U             &kp Y             &trans   &none
+  &none  &lh_hr_mt LCTRL A  &lh_hr_mt LALT R  &lh_hr_mt LGUI S  &lh_hr_mt LSHFT T   &kp G                                                   &kp M  &rh_hr_mt RSHFT N  &rh_hr_mt RGUI E  &rh_hr_mt RALT I  &rh_hr_mt RCTRL O   &none
+  &none              &kp Z             &kp X             &kp C              &kp D   &kp V  &trans   &none   &none   &none   &none  &trans   &kp K              &kp H            &trans            &trans             &trans   &none
+ &trans              &none             &none             &none              &none          &trans  &trans   &none   &none  &trans  &trans                      &none             &none             &none              &none   &none
             >;
         };
 
-        magic_layer {
+        layer_AssistOff {
             bindings = <
-            &bt BT_CLR        &none               &none           &none           &none                                                                                                           &none      &none      &none      &none      &none
-            &none             &none               &none           &none           &none           &none                                                                                &none      &none      &none      &none      &none      &none
-            &none             &rgb_ug RGB_SPI     &rgb_ug RGB_SAI &rgb_ug RGB_HUI &rgb_ug RGB_BRI &rgb_ug RGB_TOG                                                                      &none      &none      &none      &none      &none      &none
-            &bootloader       &rgb_ug RGB_SPD     &rgb_ug RGB_SAD &rgb_ug RGB_HUD &rgb_ug RGB_BRD &rgb_ug RGB_EFF                                                                      &none      &none      &none      &none      &none      &bootloader
-            &sys_reset        &none               &none           &none           &none           &none           &bt_2     &bt_3     &none            &none     &none     &none       &none      &none      &none      &none      &none      &sys_reset
-            &none             &none               &none           &none           &none                           &bt_0     &bt_1     &out OUT_USB     &none     &none     &none                  &none      &none      &none      &none      &none
+  &none   &none   &none   &none   &none                                                                                                     &none   &none       &none          &trans  &trans
+  &none   &none   &none   &none   &none   &none                                                                                     &none   &none   &none       &none          &trans  &trans
+  &none  &trans  &trans  &trans  &trans  &trans                                                                                    &trans  &trans  &trans      &trans  &question_excl   &none
+  &none  &trans  &trans  &trans  &trans  &trans                                                                                    &trans  &trans  &trans      &trans          &trans   &none
+  &none  &trans  &trans  &trans  &trans  &trans                    &trans   &none   &none   &none                   &none  &trans  &trans  &trans  &trans  &dot_colon          &trans   &none
+ &trans   &none   &none   &none   &none          &fst_lt EDITING_MO SPACE  &trans   &none   &none  &fst_lt FUNCTION ENTER  &trans           &none   &none       &none           &none   &none
             >;
         };
+
+        layer_PC {
+            bindings = <
+  &none                            &none   &none                             &none   &none                                                                             &none                             &none   &none                           &trans     &trans
+  &none                            &none   &none                             &none   &none   &none                                                             &none   &none                             &none   &none                           &trans  &kp LG(L)
+  &none                           &trans  &trans                            &trans  &trans  &trans                                                            &trans  &trans                            &trans  &trans                           &trans      &none
+  &none  &lh_hr_mt_a_repeat_start LGUI 0  &trans  &lh_hr_mt_s_repeat_start LCTRL 0  &trans  &trans                                                            &trans  &trans  &rh_hr_mt_e_repeat_start RCTRL 0  &trans  &rh_hr_mt_o_repeat_start RGUI 0      &none
+  &none                           &trans  &trans                            &trans  &trans  &trans  &trans   &none   &none   &none   &none  &rshft_bspcwd_pc  &trans  &trans                            &trans  &trans                           &trans      &none
+ &trans                            &none   &none                             &none   &none          &trans  &trans   &none   &none  &trans            &trans           &none                             &none   &none                            &none      &none
+            >;
+        };
+
+        layer_RepeatCont {
+            bindings = <
+  &none   &none   &none   &none   &none                                                                             &none   &none   &none  &trans  &trans
+  &none   &none   &none   &none   &none   &none                                                             &none   &none   &none   &none  &trans  &trans
+  &none  &trans  &trans  &trans  &trans  &trans                                                            &trans  &trans  &trans  &trans  &trans   &none
+  &none  &trans  &trans  &trans  &trans  &trans                                                            &trans  &trans  &trans  &trans  &trans   &none
+  &none  &trans  &trans  &trans  &trans  &trans  &trans   &none   &none   &none   &none  &key_repeat_cont  &trans  &trans  &trans  &trans  &trans   &none
+ &trans   &none   &none   &none   &none          &trans  &trans   &none   &none  &trans            &trans           &none   &none   &none   &none   &none
+            >;
+        };
+
+        layer_RepeatContSL {
+            bindings = <
+  &none   &none   &none   &none   &none                                                                   &none   &none   &none  &trans  &trans
+  &none   &none   &none   &none   &none   &none                                                   &none   &none   &none   &none  &trans  &trans
+  &none  &trans  &trans  &trans  &trans  &trans                                                  &trans  &trans  &trans  &trans  &trans   &none
+  &none  &trans  &trans  &trans  &trans  &trans                                                  &trans  &trans  &trans  &trans  &trans   &none
+  &none  &trans  &trans  &trans  &trans  &trans  &trans   &none   &none   &none   &none  &trans  &trans  &trans  &trans  &trans  &trans   &none
+ &trans   &none   &none   &none   &none          &trans  &trans   &none   &none  &trans  &trans           &none   &none   &none   &none   &none
+            >;
+        };
+
+        layer_RepeatContOff {
+            bindings = <
+  &none   &none   &none   &none   &none                                                                              &none   &none   &none  &trans  &trans
+  &none   &none   &none   &none   &none   &none                                                              &none   &none   &none   &none  &trans  &trans
+  &none  &trans  &trans  &trans  &trans  &trans                                                             &trans  &trans  &trans  &trans  &trans   &none
+  &none  &trans  &trans  &trans  &trans  &trans                                                             &trans  &trans  &trans  &trans  &trans   &none
+  &none  &trans  &trans  &trans  &trans  &trans  &trans   &none   &none   &none   &none  &rshft_bspcwd_mac  &trans  &trans  &trans  &trans  &trans   &none
+ &trans   &none   &none   &none   &none          &trans  &trans   &none   &none  &trans             &trans           &none   &none   &none   &none   &none
+            >;
+        };
+
+        layer_RepeatOffPC {
+            bindings = <
+  &none             &none   &none              &none   &none                                                                             &none              &none   &none            &trans  &trans
+  &none             &none   &none              &none   &none   &none                                                             &none   &none              &none   &none            &trans  &trans
+  &none            &trans  &trans             &trans  &trans  &trans                                                            &trans  &trans             &trans  &trans            &trans   &none
+  &none  &lh_hr_mt LGUI A  &trans  &lh_hr_mt LCTRL S  &trans  &trans                                                            &trans  &trans  &rh_hr_mt RCTRL E  &trans  &rh_hr_mt RGUI O   &none
+  &none            &trans  &trans             &trans  &trans  &trans  &trans   &none   &none   &none   &none  &rshft_bspcwd_pc  &trans  &trans             &trans  &trans            &trans   &none
+ &trans             &none   &none              &none   &none          &trans  &trans   &none   &none  &trans            &trans           &none              &none   &none             &none   &none
+            >;
+        };
+
+        layer_RepeatEnd {
+            bindings = <
+  &none   &none   &none   &none   &none                                                                         &none   &none   &none  &trans  &trans
+  &none   &none   &none   &none   &none   &none                                                         &none   &none   &none   &none  &trans  &trans
+  &none  &trans  &trans  &trans  &trans  &trans                                                        &trans  &trans  &trans  &trans  &trans   &none
+  &none  &trans  &trans  &trans  &trans  &trans                                                        &trans  &trans  &trans  &trans  &trans   &none
+  &none  &trans  &trans  &trans  &trans  &trans  &trans   &none   &none   &none   &none  &kp LA(BSPC)  &trans  &trans  &trans  &trans  &trans   &none
+ &trans   &none   &none   &none   &none          &trans  &trans   &none   &none  &trans        &trans           &none   &none   &none   &none   &none
+            >;
+        };
+
+        layer_RepeatEndPC {
+            bindings = <
+  &none   &none   &none   &none   &none                                                                         &none   &none   &none  &trans  &trans
+  &none   &none   &none   &none   &none   &none                                                         &none   &none   &none   &none  &trans  &trans
+  &none  &trans  &trans  &trans  &trans  &trans                                                        &trans  &trans  &trans  &trans  &trans   &none
+  &none  &trans  &trans  &trans  &trans  &trans                                                        &trans  &trans  &trans  &trans  &trans   &none
+  &none  &trans  &trans  &trans  &trans  &trans  &trans   &none   &none   &none   &none  &kp LC(BSPC)  &trans  &trans  &trans  &trans  &trans   &none
+ &trans   &none   &none   &none   &none          &trans  &trans   &none   &none  &trans        &trans           &none   &none   &none   &none   &none
+            >;
+        };
+
+        layer_SentCaseCont {
+            bindings = <
+  &none   &none   &none   &none   &none                                                                                                                                  &none   &none   &none                   &trans  &trans
+  &none   &none   &none   &none   &none   &none                                                                                                                  &none   &none   &none   &none                   &trans  &trans
+  &none  &trans  &trans  &trans  &trans  &trans                                                                                                                 &trans  &trans  &trans  &trans                   &trans   &none
+  &none  &trans  &trans  &trans  &trans  &trans                                                                                                                 &trans  &trans  &trans  &trans                   &trans   &none
+  &none  &trans  &trans  &trans  &trans  &trans                                     &trans                               &none   &none   &none   &none  &trans  &trans  &trans  &trans  &trans  &sqt_dqt_sent_case_cont   &none
+ &trans   &none   &none   &none   &none          &fst_lt_space_sent_case_cont EDITING_MO 0  &fst_lt_tab_sent_case_cont MEDIA 0   &none   &none  &trans  &trans           &none   &none   &none                    &none   &none
+            >;
+        };
+
+        layer_SentCaseEnd {
+            bindings = <
+  &none                              &none                             &none                             &none                              &none                                                                                                                                                                               &none                             &none                             &none                             &trans  &trans
+  &none                              &none                             &none                             &none                              &none             &none                                                                                                                          &none                              &none                             &none                             &none                             &trans  &trans
+  &none                   &q_sent_case_end                  &w_sent_case_end                  &f_sent_case_end                   &p_sent_case_end  &b_sent_case_end                                                                                                               &j_sent_case_end                   &l_sent_case_end                  &u_sent_case_end                  &y_sent_case_end                             &trans   &none
+  &none  &lh_hr_mt_a_sent_case_end LCTRL 0  &lh_hr_mt_r_sent_case_end LALT 0  &lh_hr_mt_s_sent_case_end LGUI 0  &lh_hr_mt_t_sent_case_end LSHFT 0  &g_sent_case_end                                                                                                               &m_sent_case_end  &rh_hr_mt_n_sent_case_end RSHFT 0  &rh_hr_mt_e_sent_case_end RGUI 0  &rh_hr_mt_i_sent_case_end RALT 0  &rh_hr_mt_o_sent_case_end RCTRL 0   &none
+  &none                   &z_sent_case_end                  &x_sent_case_end                  &c_sent_case_end                   &d_sent_case_end  &v_sent_case_end                                    &trans                              &none   &none   &none   &none  &trans  &k_sent_case_end                   &h_sent_case_end                            &trans                            &trans             &sqt_dqt_sent_case_end   &none
+ &trans                              &none                             &none                             &none                              &none                    &fst_lt_space_sent_case_end EDITING_MO 0  &fst_lt_tab_sent_case_end MEDIA 0   &none   &none  &trans  &trans                                                &none                             &none                             &none                              &none   &none
+            >;
+        };
+
+        layer_SentCaseEndPC {
+            bindings = <
+  &none                             &none   &none                              &none   &none                                                                   &none                              &none   &none                            &trans  &trans
+  &none                             &none   &none                              &none   &none   &none                                                   &none   &none                              &none   &none                            &trans  &trans
+  &none                            &trans  &trans                             &trans  &trans  &trans                                                  &trans  &trans                             &trans  &trans                            &trans   &none
+  &none  &lh_hr_mt_a_sent_case_end LGUI 0  &trans  &lh_hr_mt_s_sent_case_end LCTRL 0  &trans  &trans                                                  &trans  &trans  &rh_hr_mt_e_sent_case_end RCTRL 0  &trans  &rh_hr_mt_o_sent_case_end RGUI 0   &none
+  &none                            &trans  &trans                             &trans  &trans  &trans  &trans   &none   &none   &none   &none  &trans  &trans  &trans                             &trans  &trans                            &trans   &none
+ &trans                             &none   &none                              &none   &none          &trans  &trans   &none   &none  &trans  &trans           &none                              &none   &none                             &none   &none
+            >;
+        };
+
+        layer_CapICont {
+            bindings = <
+  &none   &none   &none   &none   &none                                                                   &none   &none                          &none               &trans  &trans
+  &none   &none   &none   &none   &none   &none                                                   &none   &none   &none                          &none               &trans  &trans
+  &none  &trans  &trans  &trans  &trans  &trans                                                  &trans  &trans  &trans                         &trans               &trans   &none
+  &none  &trans  &trans  &trans  &trans  &trans                                                  &trans  &trans  &trans  &rh_hr_mt_i_cap_i_cont RALT 0               &trans   &none
+  &none  &trans  &trans  &trans  &trans  &trans  &trans   &none   &none   &none   &none  &trans  &trans  &trans  &trans                         &trans  &sqt_dqt_cap_i_cont   &none
+ &trans   &none   &none   &none   &none          &trans  &trans   &none   &none  &trans  &trans           &none   &none                          &none                &none   &none
+            >;
+        };
+
+        layer_CapIEnd {
+            bindings = <
+  &none   &none   &none   &none   &none                                                                                                                                                    &none                  &none                 &none                    &trans  &trans
+  &none   &none   &none   &none   &none   &none                                                                                                                                    &none   &none                  &none                 &none                    &trans  &trans
+  &none  &trans  &trans  &trans  &trans  &trans                                                                                                                                   &trans  &trans                 &trans                &trans  &question_excl_cap_i_end   &none
+  &none  &trans  &trans  &trans  &trans  &trans                                                                                                                                   &trans  &trans                 &trans                &trans                    &trans   &none
+  &none  &trans  &trans  &trans  &trans  &trans                                &trans                          &none   &none   &none                               &none  &trans  &trans  &trans  &comma_semi_cap_i_end  &dot_colon_cap_i_end        &sqt_dqt_cap_i_end   &none
+ &trans   &none   &none   &none   &none          &fst_lt_space_cap_i_end EDITING_MO 0  &fst_lt_tab_cap_i_end MEDIA 0   &none   &none  &fst_lt_enter_cap_i_end FUNCTION 0  &trans           &none                  &none                 &none                     &none   &none
+            >;
+        };
+
+        layer_Editing {
+            bindings = <
+  &none      &none     &none     &none                           &none                                                                                                  &none            &none            &none            &none   &none
+  &none      &none     &none     &none                           &none             &none                                                               &none            &none            &none            &none            &none   &none
+  &none      &none     &none     &none            &sk LC(LS(LA(LGUI)))             &none                                                           &kp LG(X)         &kp HOME        &kp PG_DN        &kp PG_UP          &kp END   &none
+  &none  &sk LCTRL  &sk LALT  &sk LGUI                       &sk LSHFT  &tog EDITING_TOG                                                   &copy_sel_all_mac         &kp LEFT         &kp DOWN           &kp UP        &kp RIGHT   &none
+  &none      &none     &none     &none  &tog_sl NUMBERS_TOG NUMBERS_MO             &none  &trans   &none   &none   &none   &none  &kp INS    &paste_undo_mac  &sel_wd_bwd_mac  &sel_ln_fwd_mac  &sel_ln_bwd_mac  &sel_wd_fwd_mac   &none
+ &trans      &none     &none     &none                           &none                    &trans  &trans   &none   &none  &trans   &trans                               &none            &none            &none            &none   &none
+            >;
+        };
+
+        layer_EditingPC {
+            bindings = <
+  &none     &none   &none      &none   &none                                                                                     &none           &none           &none           &none   &none
+  &none     &none   &none      &none   &none   &none                                                             &none           &none           &none           &none           &none   &none
+  &none     &none   &none      &none  &trans   &none                                                         &kp LC(X)          &trans          &trans          &trans          &trans   &none
+  &none  &sk LGUI  &trans  &sk LCTRL  &trans  &trans                                                  &copy_sel_all_pc          &trans          &trans          &trans          &trans   &none
+  &none     &none   &none      &none  &trans   &none  &trans   &none   &none   &none   &none  &trans    &paste_undo_pc  &sel_wd_bwd_pc  &sel_ln_fwd_pc  &sel_ln_bwd_pc  &sel_wd_fwd_pc   &none
+ &trans     &none   &none      &none   &none          &trans  &trans   &none   &none  &trans  &trans                             &none           &none           &none           &none   &none
+            >;
+        };
+
+        layer_EditingMo {
+            bindings = <
+  &none   &none   &none   &none   &none                                                                   &none   &none   &none  &trans  &trans
+  &none   &none   &none   &none   &none   &none                                                   &none   &none   &none   &none  &trans  &trans
+  &none  &trans  &trans  &trans  &trans  &trans                                                  &trans  &trans  &trans  &trans  &trans   &none
+  &none  &trans  &trans  &trans  &trans  &trans                                                  &trans  &trans  &trans  &trans  &trans   &none
+  &none  &trans  &trans  &trans  &trans  &trans  &trans   &none   &none   &none   &none  &trans  &trans  &trans  &trans  &trans  &trans   &none
+ &trans   &none   &none   &none   &none          &trans  &trans   &none   &none  &trans  &trans           &none   &none   &none   &none   &none
+            >;
+        };
+
+        layer_EditingTog {
+            bindings = <
+  &none   &none   &none   &none   &none                                                                                               &none   &none   &none  &trans  &trans
+  &none   &none   &none   &none   &none   &none                                                                               &none   &none   &none   &none  &trans  &trans
+  &none  &trans  &trans  &trans  &trans  &trans                                                                              &trans  &trans  &trans  &trans  &trans   &none
+  &none  &trans  &trans  &trans  &trans  &trans                                                                              &trans  &trans  &trans  &trans  &trans   &none
+  &none  &trans  &trans  &trans   &none  &trans  &editing_numbers_status_locked    &none   &none   &none    &none    &trans  &trans  &trans  &trans  &trans  &trans   &none
+ &trans   &none   &none   &none   &none                               &kp SPACE  &kp TAB   &none   &none  &kp RET  &kp BSPC           &none   &none   &none   &none   &none
+            >;
+        };
+
+        layer_SelectCont {
+            bindings = <
+  &none   &none   &none   &none   &none                                                                                 &none             &none             &none                &trans  &trans
+  &none   &none   &none   &none   &none   &none                                                   &none                 &none             &none             &none                &trans  &trans
+  &none  &trans  &trans  &trans  &trans  &trans                                                  &trans                &trans            &trans            &trans                &trans   &none
+  &none  &trans  &trans  &trans  &trans  &trans                                                  &trans                &trans            &trans            &trans                &trans   &none
+  &none  &trans  &trans  &trans  &trans  &trans  &trans   &none   &none   &none   &none  &trans  &trans  &cont_sel_wd_bwd_mac  &cont_sel_ln_fwd  &cont_sel_ln_bwd  &cont_sel_wd_fwd_mac   &none
+ &trans   &none   &none   &none   &none          &trans  &trans   &none   &none  &trans  &trans                         &none             &none             &none                 &none   &none
+            >;
+        };
+
+        layer_SelectContPC {
+            bindings = <
+  &none   &none   &none   &none   &none                                                                                &none   &none   &none               &trans  &trans
+  &none   &none   &none   &none   &none   &none                                                   &none                &none   &none   &none               &trans  &trans
+  &none  &trans  &trans  &trans  &trans  &trans                                                  &trans               &trans  &trans  &trans               &trans   &none
+  &none  &trans  &trans  &trans  &trans  &trans                                                  &trans               &trans  &trans  &trans               &trans   &none
+  &none  &trans  &trans  &trans  &trans  &trans  &trans   &none   &none   &none   &none  &trans  &trans  &cont_sel_wd_bwd_pc  &trans  &trans  &cont_sel_wd_fwd_pc   &none
+ &trans   &none   &none   &none   &none          &trans  &trans   &none   &none  &trans  &trans                        &none   &none   &none                &none   &none
+            >;
+        };
+
+        layer_SelectContSL {
+            bindings = <
+  &none   &none   &none   &none   &none                                                                   &none   &none   &none  &trans  &trans
+  &none   &none   &none   &none   &none   &none                                                   &none   &none   &none   &none  &trans  &trans
+  &none  &trans  &trans  &trans  &trans  &trans                                                  &trans  &trans  &trans  &trans  &trans   &none
+  &none  &trans  &trans  &trans  &trans  &trans                                                  &trans  &trans  &trans  &trans  &trans   &none
+  &none  &trans  &trans  &trans  &trans  &trans  &trans   &none   &none   &none   &none  &trans  &trans  &trans  &trans  &trans  &trans   &none
+ &trans   &none   &none   &none   &none          &trans  &trans   &none   &none  &trans  &trans           &none   &none   &none   &none   &none
+            >;
+        };
+
+        layer_Media {
+            bindings = <
+  &none      &none     &none     &none                 &none                                                                                                     &none       &none         &none         &none   &none
+  &none      &none     &none     &none                 &none   &none                                                                    &none                    &none       &none         &none         &none   &none
+  &none      &none     &none     &none  &sk LC(LS(LA(LGUI)))   &none                                                                    &none  &kp LC(LS(LA(LG(F13))))  &kp C_MUTE  &kp C_VOL_DN  &kp C_VOL_UP   &none
+  &none  &sk LCTRL  &sk LALT  &sk LGUI             &sk LSHFT   &none                                                                    &none  &kp LC(LS(LA(LG(F14))))    &kp C_PP    &kp C_PREV    &kp C_NEXT   &none
+  &none      &none     &none     &none                 &none   &none  &trans   &none   &none   &none                  &none   &kp DEL   &none            &kp LC(LG(Q))   &kp C_PWR  &kp C_BRI_DN  &kp C_BRI_UP   &none
+ &trans      &none     &none     &none                 &none          &trans  &trans   &none   &none  &rt_lt FUNCTION ENTER  &kp BSPC                            &none       &none         &none         &none   &none
+            >;
+        };
+
+        layer_MediaPC {
+            bindings = <
+  &none     &none   &none      &none   &none                                                                      &none   &none   &none   &none   &none
+  &none     &none   &none      &none   &none   &none                                                   &none      &none   &none   &none   &none   &none
+  &none     &none   &none      &none  &trans   &none                                                   &none     &trans  &trans  &trans  &trans   &none
+  &none  &sk LGUI  &trans  &sk LCTRL  &trans   &none                                                   &none     &trans  &trans  &trans  &trans   &none
+  &none     &none   &none      &none   &none   &none  &trans   &none   &none   &none   &none  &trans   &none  &kp LG(L)  &trans  &trans  &trans   &none
+ &trans     &none   &none      &none   &none          &trans  &trans   &none   &none  &trans  &trans              &none   &none   &none   &none   &none
+            >;
+        };
+
+        layer_Numbers {
+            bindings = <
+  &none           &none        &none        &none         &none                                                                                                                         &none     &none     &none      &none   &none
+  &none           &none        &none        &none         &none            &none                                                                        &none                           &none     &none     &none      &none   &none
+  &none  &as_bslh_caret  &as_n7_lbkt  &as_n8_rbkt   &as_n9_star    &as_fslh_amps                                                                        &none            &sk RC(RS(RA(RGUI)))     &none     &none      &none   &none
+  &none  &as_colon_excl  &as_n4_lpar  &as_n5_rpar  &as_n6_equal    &as_hash_pipe                                                             &tog NUMBERS_TOG                       &sk RSHFT  &sk RGUI  &sk RALT  &sk RCTRL   &none
+  &none    &as_at_prcnt  &as_n1_lbrc  &as_n2_rbrc   &as_n3_dllr  &as_grave_tilde  &as_minus_plus      &none   &none   &none   &none  &trans             &none  &tog_sl EDITING_TOG EDITING_MO     &none     &none      &none   &none
+ &trans           &none        &none        &none         &none                     &as_n0_under  &as_lt_gt   &none   &none  &trans  &trans                                             &none     &none     &none      &none   &none
+            >;
+        };
+
+        layer_NumbersMo {
+            bindings = <
+  &none   &none   &none   &none   &none                                                                   &none   &none   &none  &trans  &trans
+  &none   &none   &none   &none   &none   &none                                                   &none   &none   &none   &none  &trans  &trans
+  &none  &trans  &trans  &trans  &trans  &trans                                                  &trans  &trans  &trans  &trans  &trans   &none
+  &none  &trans  &trans  &trans  &trans  &trans                                                  &trans  &trans  &trans  &trans  &trans   &none
+  &none  &trans  &trans  &trans  &trans  &trans  &trans   &none   &none   &none   &none  &trans  &trans  &trans  &trans  &trans  &trans   &none
+ &trans   &none   &none   &none   &none          &trans  &trans   &none   &none  &trans  &trans           &none   &none   &none   &none   &none
+            >;
+        };
+
+        layer_NumbersTog {
+            bindings = <
+  &none   &none   &none   &none   &none                                                                                            &none   &none   &none  &trans  &trans
+  &none   &none   &none   &none   &none   &none                                                                            &none   &none   &none   &none  &trans  &trans
+  &none  &trans  &trans  &trans  &trans  &trans                                                                           &trans  &trans  &trans  &trans  &trans   &none
+  &none  &trans  &trans  &trans  &trans  &trans                                                                           &trans  &trans  &trans  &trans  &trans   &none
+  &none  &trans  &trans  &trans  &trans  &trans  &trans   &none   &none   &none    &none  &editing_numbers_status_locked  &trans  &trans  &trans  &trans  &trans   &none
+ &trans   &none   &none   &none   &none          &trans  &trans   &none   &none  &kp RET                        &kp BSPC           &none   &none   &none   &none   &none
+            >;
+        };
+
+        layer_Function {
+            bindings = <
+  &none    &none   &none   &none   &none                                                                                                       &none     &none     &none      &none   &none
+  &none    &none   &none   &none   &none            &none                                                                &none                 &none     &none     &none      &none   &none
+  &none  &kp F12  &kp F7  &kp F8  &kp F9        &kp PSCRN                                                                &none  &sk RC(RS(RA(RGUI)))     &none     &none      &none   &none
+  &none  &kp F11  &kp F4  &kp F5  &kp F6         &kp SLCK                                                                &none             &sk RSHFT  &sk RGUI  &sk RALT  &sk RCTRL   &none
+  &none  &kp F10  &kp F1  &kp F2  &kp F3  &kp PAUSE_BREAK    &kp ESC             &none   &none   &none   &none  &trans   &none                 &none     &none     &none      &none   &none
+ &trans    &none   &none   &none   &none                   &kp SPACE  &rt_lt MEDIA TAB   &none   &none  &trans  &trans                         &none     &none     &none      &none   &none
+            >;
+        };
+
+        layer_NumFuncPC {
+            bindings = <
+  &none   &none   &none   &none   &none                                                                   &none      &none   &none     &none   &none
+  &none   &none   &none   &none   &none   &none                                                   &none   &none      &none   &none     &none   &none
+  &none  &trans  &trans  &trans  &trans  &trans                                                   &none  &trans      &none   &none     &none   &none
+  &none  &trans  &trans  &trans  &trans  &trans                                                  &trans  &trans  &sk RCTRL  &trans  &sk RGUI   &none
+  &none  &trans  &trans  &trans  &trans  &trans  &trans   &none   &none   &none   &none  &trans   &none  &trans      &none   &none     &none   &none
+ &trans   &none   &none   &none   &none          &trans  &trans   &none   &none  &trans  &trans           &none      &none   &none     &none   &none
+            >;
+        };
+
+        layer_System {
+            bindings = <
+  &none            &none            &none            &none            &none                                                                                                  &none           &none           &none           &none   &none
+  &none            &none            &none            &none            &none            &none                                                                &none            &none           &none           &none           &none   &none
+  &none      &bootloader       &sys_reset  &off REPEAT_OFF  &off ASSIST_OFF          &off PC                                                               &on PC   &on ASSIST_OFF  &on REPEAT_OFF      &sys_reset     &bootloader   &none
+  &none  &rgb_ug RGB_SPI  &rgb_ug RGB_SAI  &rgb_ug RGB_HUI  &rgb_ug RGB_BRI  &rgb_ug RGB_TOG                                                         &out OUT_USB   &out_disc_bt_0  &out_disc_bt_1  &out_disc_bt_2  &out_disc_bt_3   &none
+  &none  &rgb_ug RGB_SPD  &rgb_ug RGB_SAD  &rgb_ug RGB_HUD  &rgb_ug RGB_BRD  &rgb_ug RGB_EFF  &trans   &none   &none   &none   &none  &trans  &confirm_bt_clr_all  &confirm_bt_clr           &none           &none           &none   &none
+ &trans            &none            &none            &none            &none                   &trans  &trans   &none   &none  &trans  &trans                                 &none           &none           &none           &none   &none
+            >;
+        };
+
     };
 };
