@@ -194,14 +194,12 @@
 
 /* Combo helper */
 #define ZMK_COMBO(NAME, TIMEOUT_MS, KEY_POSITIONS, LAYERS, BINDINGS) \
-    / { \
-        NAME { \
-            timeout-ms = <TIMEOUT_MS>; \
-            key-positions = <KEY_POSITIONS>; \
-            layers = <LAYERS>; \
-            bindings = <BINDINGS>; \
-        }; \
-    };
+    NAME { \
+        timeout-ms = <TIMEOUT_MS>; \
+        key-positions = <KEY_POSITIONS>; \
+        layers = <LAYERS>; \
+        bindings = <BINDINGS>; \
+    }; \
 
 /* Create a ZMK Behavior without having to specify the name three times */
 #define ZMK_BEHAVIOR(NAME, ...) \
