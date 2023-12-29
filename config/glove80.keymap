@@ -11,8 +11,7 @@
 #include <dt-bindings/zmk/outputs.h>
 #include <dt-bindings/zmk/rgb.h>
 
-/ {
-    /*****************************************************************************/
+/*****************************************************************************/
                 /* Colemak-DH 36-Key Layout for Mac & PC */
 /*****************************************************************************/
 
@@ -154,37 +153,39 @@
         then-layer = <THEN>; \
     };
 
-conditional_layers {
-    compatible = "zmk,conditional-layers";
+/ {
+    conditional_layers {
+        compatible = "zmk,conditional-layers";
 
-    /* Support for both smart typing assist and repeat key being enabled */
-    LAYER_CONDITION(repeat_cont, REPEAT_CONT_SL, REPEAT_CONT)
-    LAYER_CONDITION(repeat_cap_i_cont, CAP_I_END, REPEAT_CONT)
-    LAYER_CONDITION(repeat_cont_off, REPEAT_OFF REPEAT_CONT, REPEAT_CONT_OFF)
+        /* Support for both smart typing assist and repeat key being enabled */
+        LAYER_CONDITION(repeat_cont, REPEAT_CONT_SL, REPEAT_CONT)
+        LAYER_CONDITION(repeat_cap_i_cont, CAP_I_END, REPEAT_CONT)
+        LAYER_CONDITION(repeat_cont_off, REPEAT_OFF REPEAT_CONT, REPEAT_CONT_OFF)
 
-    /* Support for toggling Mac/PC mode */
-    LAYER_CONDITION(repeat_off_pc, PC REPEAT_OFF, REPEAT_OFF_PC)
-    LAYER_CONDITION(repeat_end_pc, PC REPEAT_END, REPEAT_END_PC)
-    LAYER_CONDITION(sent_case_end_pc, PC SENT_CASE_END, SENT_CASE_END_PC)
-    LAYER_CONDITION(continue_selection_pc, PC SELECT_CONT, SELECT_CONT_PC)
-    LAYER_CONDITION(editing_pc, PC EDITING, EDITING_PC)
-    LAYER_CONDITION(media_pc, PC MEDIA, MEDIA_PC)
-    LAYER_CONDITION(numbers_pc, PC NUMBERS, NUM_FUNC_PC)
-    LAYER_CONDITION(function_pc, PC FUNCTION, NUM_FUNC_PC)
+        /* Support for toggling Mac/PC mode */
+        LAYER_CONDITION(repeat_off_pc, PC REPEAT_OFF, REPEAT_OFF_PC)
+        LAYER_CONDITION(repeat_end_pc, PC REPEAT_END, REPEAT_END_PC)
+        LAYER_CONDITION(sent_case_end_pc, PC SENT_CASE_END, SENT_CASE_END_PC)
+        LAYER_CONDITION(continue_selection_pc, PC SELECT_CONT, SELECT_CONT_PC)
+        LAYER_CONDITION(editing_pc, PC EDITING, EDITING_PC)
+        LAYER_CONDITION(media_pc, PC MEDIA, MEDIA_PC)
+        LAYER_CONDITION(numbers_pc, PC NUMBERS, NUM_FUNC_PC)
+        LAYER_CONDITION(function_pc, PC FUNCTION, NUM_FUNC_PC)
 
-    /* Layer lock feature for Numbers layer */
-    LAYER_CONDITION(numbers_mo, NUMBERS_MO, NUMBERS)
-    LAYER_CONDITION(numbers_tog, NUMBERS_TOG, NUMBERS)
+        /* Layer lock feature for Numbers layer */
+        LAYER_CONDITION(numbers_mo, NUMBERS_MO, NUMBERS)
+        LAYER_CONDITION(numbers_tog, NUMBERS_TOG, NUMBERS)
 
-    /* Layer lock feature for Editing layer */
-    LAYER_CONDITION(editing_mo, EDITING_MO, EDITING)
-    LAYER_CONDITION(editing_tog, EDITING_TOG, EDITING)
+        /* Layer lock feature for Editing layer */
+        LAYER_CONDITION(editing_mo, EDITING_MO, EDITING)
+        LAYER_CONDITION(editing_tog, EDITING_TOG, EDITING)
 
-    /* Restrict selection continuation to Editing layer */
-    LAYER_CONDITION(continue_selection, EDITING SELECT_CONT_SL, SELECT_CONT)
+        /* Restrict selection continuation to Editing layer */
+        LAYER_CONDITION(continue_selection, EDITING SELECT_CONT_SL, SELECT_CONT)
 
-    /* Hold Media and Function layers for System layer */
-    LAYER_CONDITION(system_layer, MEDIA FUNCTION, SYSTEM)
+        /* Hold Media and Function layers for System layer */
+        LAYER_CONDITION(system_layer, MEDIA FUNCTION, SYSTEM)
+    };
 };
 
 /*****************************************************************************/
@@ -193,22 +194,22 @@ conditional_layers {
 
 /* Combo helper */
 #define ZMK_COMBO(NAME, TIMEOUT_MS, KEY_POSITIONS, LAYERS, BINDINGS) \
-    NAME { \
-        timeout-ms = <TIMEOUT_MS>; \
-        key-positions = <KEY_POSITIONS>; \
-        layers = <LAYERS>; \
-        bindings = <BINDINGS>; \
+    / { \
+        NAME { \
+            timeout-ms = <TIMEOUT_MS>; \
+            key-positions = <KEY_POSITIONS>; \
+            layers = <LAYERS>; \
+            bindings = <BINDINGS>; \
+        }; \
     };
-
-/* Convert NAME parameters into a ZMK label string */
-#define STRINGIFY(x) #x
 
 /* Create a ZMK Behavior without having to specify the name three times */
 #define ZMK_BEHAVIOR(NAME, ...) \
-    behaviors { \
-        NAME: NAME { \
-            label = STRINGIFY(ZB_ ## NAME); \
-            __VA_ARGS__ \
+    / { \
+        behaviors { \
+            NAME: NAME { \
+                __VA_ARGS__ \
+            }; \
         }; \
     };
 
@@ -256,14 +257,18 @@ conditional_layers {
 
 /* Wrap ZMK_MACRO to avoid needing to specify Macro node */
 #define ZMKMACRO(NAME, ...) \
-    macros { \
-        ZMK_MACRO(NAME, __VA_ARGS__) \
+    / { \
+        macros { \
+            ZMK_MACRO(NAME, __VA_ARGS__) \
+        }; \
     };
 
 /* Wrap ZMK_MACRO1 to avoid needing to specify Macro node */
 #define ZMKMACRO1(NAME, ...) \
-    macros { \
-        ZMK_MACRO1(NAME, __VA_ARGS__) \
+    / { \
+        macros { \
+            ZMK_MACRO1(NAME, __VA_ARGS__) \
+        }; \
     };
 
 /* Instant key press Macro helper using defined timers */
@@ -349,22 +354,24 @@ conditional_layers {
                             /* Behavior Changes */
 /*****************************************************************************/
 
-behaviors {
+/ {
+    behaviors {
 
-    /* Let Caps Word continue when typing Underscore */
-    caps_word {
-        continue-list = <UNDERSCORE MINUS BACKSPACE DELETE>;
-    };
+        /* Let Caps Word continue when typing Underscore */
+        caps_word {
+            continue-list = <UNDERSCORE MINUS BACKSPACE DELETE>;
+        };
 
-    /* Use defined timer for Sticky Keys */
-    sticky_key {
-        release-after-ms = <STICKY_KEY_RELEASE_AFTER_MS>;
-        quick-release;
-    };
+        /* Use defined timer for Sticky Keys */
+        sticky_key {
+            release-after-ms = <STICKY_KEY_RELEASE_AFTER_MS>;
+            quick-release;
+        };
 
-    /* Use defined timer for Sticky Layers */
-    sticky_layer {
-        release-after-ms = <STICKY_KEY_RELEASE_AFTER_MS>;
+        /* Use defined timer for Sticky Layers */
+        sticky_layer {
+            release-after-ms = <STICKY_KEY_RELEASE_AFTER_MS>;
+        };
     };
 };
 
@@ -376,17 +383,19 @@ behaviors {
 #define COMBO(NAME, KEY_POSITIONS, BINDINGS) \
     ZMK_COMBO(NAME, COMBO_TIMEOUT_MS, KEY_POSITIONS, BASE_LAYERS, BINDINGS)
 
-combos {
-    compatible = "zmk,combos";
+/ {
+    combos {
+        compatible = "zmk,combos";
 
-    /* Escape with left home thumb (Space) and left upper pinky (Q) */
-    COMBO(combo_esc, 23 69, &kp ESC)
+        /* Escape with left home thumb (Space) and left upper pinky (Q) */
+        COMBO(combo_esc, 23 69, &kp ESC)
 
-    /* Caps Word with left and right upper inner thumb keys (Shift) using
-       defined timer */
-    ZMK_COMBO(combo_caps_word, CAPS_WORD_COMBO_TIMEOUT_MS, 52 57, \
-        BASE_LAYERS, &caps_word \
-    )
+        /* Caps Word with left and right upper inner thumb keys (Shift) using
+        defined timer */
+        ZMK_COMBO(combo_caps_word, CAPS_WORD_COMBO_TIMEOUT_MS, 52 57, \
+            BASE_LAYERS, &caps_word \
+        )
+    };
 };
 
 /*****************************************************************************/
@@ -1000,9 +1009,6 @@ FEATURE_STATUS(editing_numbers_status_locked,
     &kp BACKSPACE \
 )
 
-};
-
-    /* Automatically generated keymap */
 / {
     keymap {
         compatible = "zmk,keymap";
