@@ -7,7 +7,7 @@ manifest:
   projects:
     - name: zmk
       remote: moergo-sc
-      revision: v23.12
+      revision: release-candidate
       import: app/west.yml
   self:
     path: config
