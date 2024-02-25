@@ -292,7 +292,8 @@
 /* Generic helper for Sticky Layer state machine actions and state
    transitions. Used to build more specific helpers for features that use this
    technique. SL_BEHAVIOR argument allows different features to use distinct
-   Sticky Layer implementations. */
+   Sticky Layer implementations. Performs state transitions seamlessly even
+   when rolling into other keys. */
 #define STATE_TRANSITION(NAME, ENTRY, ACTION_BINDING, SL_BEHAVIOR, \
                          NEXT_STATE_LAYER) \
     FAST_MACRO(NAME, \
@@ -301,6 +302,19 @@
         &macro_tap SL_BEHAVIOR NEXT_STATE_LAYER  /* Move to next state */ \
         &macro_pause_for_release  /* Hold for repeating key press */ \
         &macro_release ACTION_BINDING \
+    )
+
+/* State transition macro that allows taking an action after key release, at
+   the cost of not supporting rolls into the next state. */
+#define STATE_TRANSITION_WITH_EXIT(NAME, ENTRY, ACTION_BINDING, EXIT, \
+                                   SL_BEHAVIOR, NEXT_STATE_LAYER) \
+    FAST_MACRO(NAME, \
+        ENTRY  /* Optional setup, pass &macro_tap &... */ \
+        &macro_press ACTION_BINDING  /* Main action */ \
+        &macro_pause_for_release  /* Hold for repeating key press */ \
+        &macro_release ACTION_BINDING \
+        EXIT \
+        &macro_tap SL_BEHAVIOR NEXT_STATE_LAYER  /* Move to next state */ \
     )
 
 /* Sticky Layer Behavior definition helper */
@@ -893,17 +907,29 @@ AUTOSHIFT(tog_sl, &tog, &sl)  /* Tap for a single key press, hold to lock */
 STICKY_LAYER_NO_MODS(sl_select_cont, SELECT_TIMEOUT_MS)
 
 /* Select Macro definition helper */
-#define SELECT_HELPER(NAME, SETUP, SELECTION_BINDING) \
-    STATE_TRANSITION(NAME, SETUP, SELECTION_BINDING, &sl_select_cont, \
-        SELECT_CONT_SL)
+#define SELECT_HELPER(NAME, SETUP, SELECTION_BINDING, CLEANUP) \
+    STATE_TRANSITION_WITH_EXIT(NAME, SETUP, SELECTION_BINDING, CLEANUP, \
+        &sl_select_cont, SELECT_CONT_SL)
 
-/* Select start Macro helper */
-#define SELECT_START_MACRO(NAME, SETUP_BINDINGS, SELECTION_BINDING) \
-    SELECT_HELPER(NAME, &macro_tap SETUP_BINDINGS, SELECTION_BINDING)
+/* Select word start Macro helper */
+#define SELECT_WORD_START_MACRO(NAME, SETUP_BINDINGS, SELECTION_BINDING) \
+    SELECT_HELPER(NAME, &macro_tap SETUP_BINDINGS, SELECTION_BINDING, \
+        /* No CLEANUP */)
 
-/* Select continue Macro helper */
-#define SELECT_CONT_MACRO(NAME, SELECTION_BINDING) \
-    SELECT_HELPER(NAME, /* No SETUP */, SELECTION_BINDING)
+/* Select line start Macro helper */
+#define SELECT_LINE_START_MACRO(NAME, SETUP_BINDINGS, SELECTION_BINDING, \
+                                CLEANUP_BINDINGS) \
+    SELECT_HELPER(NAME, &macro_tap SETUP_BINDINGS, SELECTION_BINDING, \
+        &macro_tap CLEANUP_BINDINGS)
+
+/* Select word continue Macro helper */
+#define SELECT_WORD_CONT_MACRO(NAME, SELECTION_BINDING) \
+    SELECT_HELPER(NAME, /* No SETUP */, SELECTION_BINDING, /* No CLEANUP */)
+
+/* Select line continue Macro helper */
+#define SELECT_LINE_CONT_MACRO(NAME, SELECTION_BINDING, CLEANUP_BINDINGS) \
+    SELECT_HELPER(NAME, /* No SETUP */, SELECTION_BINDING, \
+        &macro_tap CLEANUP_BINDINGS)
 
 /* Movement, jumping and selection helper macros */
 #define MAC_WF   LA(RIGHT)              /* Jump forward a word on Mac */
@@ -912,34 +938,50 @@ STICKY_LAYER_NO_MODS(sl_select_cont, SELECT_TIMEOUT_MS)
 #define PC_WF    LC(RIGHT)              /* Jump forward a word on PC */
 #define PC_WB    LC(LEFT)               /* Jump backward a word on PC */
 #define PC_HOME  HOME                   /* Jump to start of line on PC */
-#define JMP2(MV1, MV2) &kp MV1 &kp MV2  /* Jump around, jump around... */
-#define JMP3(MV1, MV2, MV3)             /* Jump up, jump up, and get down */ \
-    &kp MV1 &kp MV2 &kp MV3
 #define SEL(MOVEMENT) &kp LS(MOVEMENT)  /* Select text */
 
-/* Word and line select start Macros for Mac */
-SELECT_START_MACRO(sel_wd_fwd_mac, JMP2(MAC_WF, MAC_WB), SEL(MAC_WF))
-SELECT_START_MACRO(sel_wd_bwd_mac, JMP2(MAC_WB, MAC_WF), SEL(MAC_WB))
-SELECT_START_MACRO(sel_ln_fwd_mac, JMP2(MAC_HOME, MAC_HOME), SEL(DOWN))
-SELECT_START_MACRO(sel_ln_bwd_mac, JMP3(MAC_HOME, MAC_HOME, DOWN), SEL(UP))
+/* Jump to start or end of word regardless of cursor position */
+#define MAC_START_OF_WD &kp MAC_WF &kp MAC_WB
+#define MAC_END_OF_WD &kp MAC_WB &kp MAC_WF
+#define PC_START_OF_WD &kp PC_WF &kp PC_WB
+#define PC_END_OF_WD &kp PC_WB &kp PC_WF
 
-/* Word and line select start Macros for PC */
-SELECT_START_MACRO(sel_wd_fwd_pc, JMP2(PC_WF, PC_WB), SEL(PC_WF))
-SELECT_START_MACRO(sel_wd_bwd_pc, JMP2(PC_WB, PC_WF), SEL(PC_WB))
-SELECT_START_MACRO(sel_ln_fwd_pc, JMP2(PC_HOME, PC_HOME), SEL(DOWN))
-SELECT_START_MACRO(sel_ln_bwd_pc, JMP3(PC_HOME, PC_HOME, DOWN), SEL(UP))
+/* We use LG(LEFT) / HOME twice to avoid an issue with IDEs being too smart and
+   placing the cursor after the indenting whitespace */
+#define MAC_START_OF_LN &kp MAC_HOME &kp MAC_HOME
+#define MAC_START_OF_NEXT_LN &kp DOWN &kp MAC_HOME &kp MAC_HOME
+#define MAC_SEL_START_OF_LN SEL(MAC_HOME) SEL(MAC_HOME)
+#define PC_START_OF_LN &kp PC_HOME &kp PC_HOME
+#define PC_START_OF_NEXT_LN &kp DOWN &kp PC_HOME &kp PC_HOME
+#define PC_SEL_START_OF_LN SEL(PC_HOME) SEL(PC_HOME)
 
-/* Word select continue Macros for Mac */
-SELECT_CONT_MACRO(cont_sel_wd_fwd_mac, SEL(MAC_WF))
-SELECT_CONT_MACRO(cont_sel_wd_bwd_mac, SEL(MAC_WB))
+/* Word select Macros for Mac */
+SELECT_WORD_START_MACRO(sel_wd_fwd_mac, MAC_START_OF_WD, SEL(MAC_WF))
+SELECT_WORD_START_MACRO(sel_wd_bwd_mac, MAC_END_OF_WD, SEL(MAC_WB))
+SELECT_WORD_CONT_MACRO(cont_sel_wd_fwd_mac, SEL(MAC_WF))
+SELECT_WORD_CONT_MACRO(cont_sel_wd_bwd_mac, SEL(MAC_WB))
 
-/* Word select continue Macros for PC */
-SELECT_CONT_MACRO(cont_sel_wd_fwd_pc, SEL(PC_WF))
-SELECT_CONT_MACRO(cont_sel_wd_bwd_pc, SEL(PC_WB))
+/* Word select Macros for PC */
+SELECT_WORD_START_MACRO(sel_wd_fwd_pc, PC_START_OF_WD, SEL(PC_WF))
+SELECT_WORD_START_MACRO(sel_wd_bwd_pc, PC_END_OF_WD, SEL(PC_WB))
+SELECT_WORD_CONT_MACRO(cont_sel_wd_fwd_pc, SEL(PC_WF))
+SELECT_WORD_CONT_MACRO(cont_sel_wd_bwd_pc, SEL(PC_WB))
 
-/* Line select continue Macros */
-SELECT_CONT_MACRO(cont_sel_ln_fwd, SEL(DOWN))
-SELECT_CONT_MACRO(cont_sel_ln_bwd, SEL(UP))
+/* Line select Macros for Mac */
+SELECT_LINE_START_MACRO(sel_ln_fwd_mac, \
+    MAC_START_OF_LN, SEL(DOWN), MAC_SEL_START_OF_LN)
+SELECT_LINE_START_MACRO(sel_ln_bwd_mac, \
+    MAC_START_OF_NEXT_LN, SEL(UP), MAC_SEL_START_OF_LN)
+SELECT_LINE_CONT_MACRO(cont_sel_ln_fwd_mac, SEL(DOWN), MAC_SEL_START_OF_LN)
+SELECT_LINE_CONT_MACRO(cont_sel_ln_bwd_mac, SEL(UP), MAC_SEL_START_OF_LN)
+
+/* Line select Macros for PC */
+SELECT_LINE_START_MACRO(sel_ln_fwd_pc, \
+    PC_START_OF_LN, SEL(DOWN), PC_SEL_START_OF_LN)
+SELECT_LINE_START_MACRO(sel_ln_bwd_pc, \
+    PC_START_OF_NEXT_LN, SEL(UP), PC_SEL_START_OF_LN)
+SELECT_LINE_CONT_MACRO(cont_sel_ln_fwd_pc, SEL(DOWN), PC_SEL_START_OF_LN)
+SELECT_LINE_CONT_MACRO(cont_sel_ln_bwd_pc, SEL(UP), PC_SEL_START_OF_LN)
 
 /*****************************************************************************/
                     /* System Layer */
@@ -1223,23 +1265,23 @@ FEATURE_STATUS(editing_numbers_status_locked,
 
         layer_SelectCont {
             bindings = <
-  &none   &none   &none   &none   &none                                                                                 &none             &none             &none                &trans  &trans
-  &none   &none   &none   &none   &none   &none                                                   &none                 &none             &none             &none                &trans  &trans
-  &none  &trans  &trans  &trans  &trans  &trans                                                  &trans                &trans            &trans            &trans                &trans   &none
-  &none  &trans  &trans  &trans  &trans  &trans                                                  &trans                &trans            &trans            &trans                &trans   &none
-  &none  &trans  &trans  &trans  &trans  &trans  &trans   &none   &none   &none   &none  &trans  &trans  &cont_sel_wd_bwd_mac  &cont_sel_ln_fwd  &cont_sel_ln_bwd  &cont_sel_wd_fwd_mac   &none
- &trans   &none   &none   &none   &none          &trans  &trans   &none   &none  &trans  &trans                         &none             &none             &none                 &none   &none
+  &none   &none   &none   &none   &none                                                                                 &none                 &none                 &none                &trans  &trans
+  &none   &none   &none   &none   &none   &none                                                   &none                 &none                 &none                 &none                &trans  &trans
+  &none  &trans  &trans  &trans  &trans  &trans                                                  &trans                &trans                &trans                &trans                &trans   &none
+  &none  &trans  &trans  &trans  &trans  &trans                                                  &trans                &trans                &trans                &trans                &trans   &none
+  &none  &trans  &trans  &trans  &trans  &trans  &trans   &none   &none   &none   &none  &trans  &trans  &cont_sel_wd_bwd_mac  &cont_sel_ln_fwd_mac  &cont_sel_ln_bwd_mac  &cont_sel_wd_fwd_mac   &none
+ &trans   &none   &none   &none   &none          &trans  &trans   &none   &none  &trans  &trans                         &none                 &none                 &none                 &none   &none
             >;
         };
 
         layer_SelectContPC {
             bindings = <
-  &none   &none   &none   &none   &none                                                                                &none   &none   &none               &trans  &trans
-  &none   &none   &none   &none   &none   &none                                                   &none                &none   &none   &none               &trans  &trans
-  &none  &trans  &trans  &trans  &trans  &trans                                                  &trans               &trans  &trans  &trans               &trans   &none
-  &none  &trans  &trans  &trans  &trans  &trans                                                  &trans               &trans  &trans  &trans               &trans   &none
-  &none  &trans  &trans  &trans  &trans  &trans  &trans   &none   &none   &none   &none  &trans  &trans  &cont_sel_wd_bwd_pc  &trans  &trans  &cont_sel_wd_fwd_pc   &none
- &trans   &none   &none   &none   &none          &trans  &trans   &none   &none  &trans  &trans                        &none   &none   &none                &none   &none
+  &none   &none   &none   &none   &none                                                                                &none                &none                &none               &trans  &trans
+  &none   &none   &none   &none   &none   &none                                                   &none                &none                &none                &none               &trans  &trans
+  &none  &trans  &trans  &trans  &trans  &trans                                                  &trans               &trans               &trans               &trans               &trans   &none
+  &none  &trans  &trans  &trans  &trans  &trans                                                  &trans               &trans               &trans               &trans               &trans   &none
+  &none  &trans  &trans  &trans  &trans  &trans  &trans   &none   &none   &none   &none  &trans  &trans  &cont_sel_wd_bwd_pc  &cont_sel_ln_fwd_pc  &cont_sel_ln_bwd_pc  &cont_sel_wd_fwd_pc   &none
+ &trans   &none   &none   &none   &none          &trans  &trans   &none   &none  &trans  &trans                        &none                &none                &none                &none   &none
             >;
         };
 
